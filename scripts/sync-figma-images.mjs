@@ -10,11 +10,19 @@ const outDir=path.resolve('assets');
 await fs.mkdir(outDir,{recursive:true});
 
 async function figma(endpoint) {
-  const r=await fetch('https://api.figma.com/v1'+endpoint,{headers:{'X-Figma-Token':token}});
-  if(!r.ok)throw new Error('Figma API '+r.status+': '+(await r.text()).slice(0,500));
-  const body=await r.json();
-  if(body.err||body.error)throw new Error('Figma API error: '+JSON.stringify(body).slice(0,500));
-  return body;
+  for (let attempt=0;attempt<6;attempt++) {
+    const r=await fetch('https://api.figma.com/v1'+endpoint,{headers:{'X-Figma-Token':token}});
+    if(r.status===429 || r.status>=500) {
+      if(attempt===5)throw new Error('Figma rate limit/server failure '+r.status);
+      const retryAfter=Number(r.headers.get('Retry-After'));
+      await new Promise(resolve=>setTimeout(resolve,Number.isFinite(retryAfter)&&retryAfter>0?Math.min(retryAfter*1000,120000):Math.min(5000*2**attempt,120000)));
+      continue;
+    }
+    if(!r.ok)throw new Error('Figma API '+r.status+': '+(await r.text()).slice(0,500));
+    const body=await r.json();
+    if(body.err||body.error)throw new Error('Figma API error: '+JSON.stringify(body).slice(0,500));
+    return body;
+  }
 }
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const nodeIds=spec.images.map(item=>item.nodeId);
