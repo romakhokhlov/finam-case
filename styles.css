@@ -73,18 +73,3 @@ h1{text-transform:lowercase}
   .page-previews{grid-template-columns:1fr 1fr}
   .page-shot img{width:100%;height:auto}
 }
-
-/* Carousel lives INSIDE the existing 676px modular-media panel. No changes to the panel's size/background. */
-.modular-carousel{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:2}
-.modular-carousel-window{width:min(65%,824px);height:100%;overflow:hidden;display:flex;align-items:center}
-.modular-carousel-track{display:flex;width:100%;height:100%;transition:transform .5s cubic-bezier(.25,.7,.25,1);will-change:transform}
-.modular-slide{flex:0 0 100%;min-width:0;height:100%;display:flex;align-items:center;justify-content:center}
-.modular-slide img{max-width:100%;max-height:min(607px,90%);width:auto;height:auto;object-fit:contain}
-.modular-control{position:absolute;z-index:3;top:50%;translate:0 -50%;width:42px;height:42px;border:1px solid rgba(255,255,255,.22);border-radius:50%;background:rgba(15,15,19,.4);backdrop-filter:blur(5px);color:white;display:grid;place-items:center;font:32px/1 'Poppins',sans-serif;cursor:pointer}
-.modular-control:hover{background:rgba(15,15,19,.65)}
-.modular-prev{left:3.5%}.modular-next{right:3.5%}
-.modular-pagination{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:9px;z-index:3}
-.modular-dot{width:8px;height:8px;padding:0;border:0;border-radius:100%;background:rgba(255,255,255,.3);cursor:pointer}
-.modular-dot.is-current{background:white}
-@media(max-width:767px){.modular-carousel-window{width:90%}.modular-control{width:30px;height:30px;font-size:24px}.modular-prev{left:1%}.modular-next{right:1%}.modular-slide img{max-height:80%}}
-@media(prefers-reduced-motion:reduce){.home-symbol:hover{animation:none}.modular-carousel-track{transition:none}}
