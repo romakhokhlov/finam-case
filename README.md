@@ -1,47 +1,37 @@
-# Finam — portfolio case
+# Finam — automated Figma → GitHub → Cloudflare
 
-Source: the latest user-supplied `finam-typography-spacing-updated(1).zip`.
+This repository contains the Finam portfolio site and an **automated image-export workflow**.
 
-## Status
-The responsive HTML/CSS/JavaScript from the supplied archive is committed.
-**Original images are not included yet:** the supplied ZIP contains no `site/assets` folder. The site will have missing graphics until these files are added under `assets/`.
+## How it works
 
-## Required assets
-```
-assets/
-  image-36.png
-  image-37.png
-  image-31.png
-  image-42.png
-  image-44.png
-  image-49.png
-  image-50.png
-  image-46.png
-  image-48.png
-  image-67.png
-  image-69.png
-  modular-38.png
-  modular-40.png
-  modular-45.png
-  modular-41.png
-  modular-39.png
-  frame-gradient.svg
-```
+1. GitHub Actions reads exact Figma layer IDs from `figma-assets.json`.
+2. It retrieves **each individual image-bearing layer** via the Figma REST API; it does NOT export parent frames.
+3. Sharp converts the PNG render to WebP (quality 84) with native alpha preserved, keeping proportionate dimensions and limiting to 2× displayed size.
+4. The action updates `index.html`, `styles.css`, checks all image paths and deletes older raster files.
+5. It commits/pushes the optimized assets to `main`. Cloudflare Pages redeploys automatically.
+6. `ASSET-REPORT.md` is generated with per-file sizes and totals.
 
-These are the exact relative paths referenced by index.html and styles.css. A separate unused `image-38.png` was named by an older script but is not required by this version.
+### One-time authorization required
 
-## Cloudflare Pages
-Connect this GitHub repository to Cloudflare Pages (Workers & Pages → Create application → Pages → Connect to Git). Use:
-- Production branch: `main`
-- Framework preset: **None**
-- Build command: leave empty
-- Build output directory: `/` (repository root)
+**GitHub Actions cannot inherit the private credentials of the ChatGPT Figma connector.** To let GitHub access this Figma file without manual asset exports, configure a Figma personal access token once:
 
-The code is a static site; no build step, paid hosting, GitHub Actions or Node.js required. Every push to main should trigger a new deployment once Git integration is configured.
+1. Generate a read-only token in Figma account settings (access to the Cases file).
+2. Open [GitHub Actions repository secrets](https://github.com/romakhokhlov/finam-case/settings/secrets/actions) → New repository secret.
+3. Name: `FIGMA_TOKEN`; value: your Figma token.
+4. Open [Sync Finam images from Figma](https://github.com/romakhokhlov/finam-case/actions/workflows/sync-figma-images.yml) → Run workflow.
 
-**Do not consider the website finished until the image assets are uploaded and verified.**
+Never share the token in chat or commit it to files.
 
-## Workflow
-Edit source files in GitHub and commit changes → Cloudflare rebuilds automatically. For new Figma graphics, export PNG/SVG/WebP and add or replace the corresponding file under `assets/`. No ongoing Figma URL dependency is needed.
+Subsequent changes to `figma-assets.json` or the exporter will automatically trigger the workflow. You can also re-run it for changed images at the same Figma node IDs. Brand-new image layers require adding their IDs to `figma-assets.json`.
 
-The CSS star rotation currently uses 10 seconds per turn; the precise reference duration was not measured.
+### Current limitations
+
+- Until `FIGMA_TOKEN` is set and the workflow succeeds, **the existing site images have not been re-exported or replaced.**
+- Exporting a standalone image layer avoids capturing neighbouring Figma layers. It does not magically remove pixels already baked into that image's raster fill. Such source-image backgrounds must be fixed at the Figma source.
+- The existing `frame-gradient.svg` stays in the repository as a separate vector asset.
+- Cloudflare Pages must already be connected to branch `main`.
+- PNG generated during processing lives only in GitHub runner memory; the action writes optimized WebP files into Git.
+
+## Site
+
+[Finam preview](https://finam-case.pages.dev/)
