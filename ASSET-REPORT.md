@@ -1,7 +1,8 @@
-# Figma modular carousel export
+# Figma image export
 
-- Source section: 4315:62167
-- Slides: 5
-- PNG input: 4161094 bytes
-- WebP output: 517066 bytes
-- Reduction: 87.6%
+- Source file: zG9GLaQaUXOhPeZC9VOBmx
+- Hero images: 2
+- Modular slides: 5
+- PNG input: 11884374 bytes
+- WebP output: 815704 bytes
+- Reduction: 93.1%
