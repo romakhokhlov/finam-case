@@ -1,0 +1,70 @@
+name: Sync Components carousel from Figma
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'components-carousel.json'
+      - 'scripts/sync-components-carousel.mjs'
+      - '.github/workflows/sync-components-carousel.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: components-carousel-figma-export
+  cancel-in-progress: false
+
+jobs:
+  export-components:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirm Figma API token
+        env:
+          FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
+        run: |
+          if [ -z "$FIGMA_TOKEN" ]; then
+            echo "::error::Missing FIGMA_TOKEN repository secret"
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install WebP optimizer
+        run: npm install --no-save --no-package-lock sharp@0.34.4
+
+      - name: Validate JavaScript syntax
+        run: |
+          node --check components-carousel.js
+          node --check scripts/sync-components-carousel.mjs
+
+      - name: Export each Figma child frame and optimize
+        env:
+          FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
+        run: node scripts/sync-components-carousel.mjs
+
+      - name: Verify referenced assets and changes
+        run: |
+          node scripts/verify-assets.mjs
+          git diff --check
+          git status --short
+
+      - name: Commit and push optimized component artwork
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- assets index.html COMPONENTS-EXPORT-REPORT.md
+          if git diff --cached --quiet; then
+            echo "Components carousel already up to date"
+          else
+            git commit -m "Publish three optimized Figma Components carousel slides"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
