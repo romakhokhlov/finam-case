@@ -75,8 +75,8 @@ h1{text-transform:lowercase}
 }
 
 
-/* Finam image panels: requested solid #1B1A2A background. */
-#hero-showcase,#key-visual-media,#modular-media,#components-media,#examples-media{background:#1B1A2A;}
+/* Finam image panels: requested solid #1B1A20 background. */
+#hero-showcase,#key-visual-media,#modular-media,#components-media,#examples-media{background:#1B1A20;}
 #hero-showcase>.background-pattern,#key-visual-media>.background-pattern,#components-media>.background-pattern,#examples-media>.background-pattern{display:none;}
 /* Reuse the exact hero tile radius and shadow for artwork surfaces. */
 #key-visual-image,#component-stack img,#examples-media .page-shot img,#modular-carousel .modular-slide img{
