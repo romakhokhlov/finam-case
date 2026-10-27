@@ -36,9 +36,6 @@ All HTML targets are in `index.html`. CSS: `styles.css`. Inspector: `debug-block
 | Components heading | `#components-title` | `index.html` | `2336:2028` |
 | Components copy | `#components-copy` | `index.html` | `2336:2026` |
 | Components artwork container | `#components-media` | `index.html` | `2336:2031` |
-| Component image stack | `#component-stack` | `index.html` | `2439:4258` |
-| Component cards image | `#component-image-cards` | `index.html` | `2439:4259` |
-| Configurable components image | `#component-image-configurable` | `index.html` | `2439:4260` |
 | Page examples | `#page-examples` | `index.html` | `2343:1976` |
 | Page examples heading | `#examples-title` | `index.html` | `2343:1979` |
 | Page examples copy | `#examples-copy` | `index.html` | `2343:1977` |
@@ -93,3 +90,19 @@ Slides ordered top-to-bottom, left-to-right in the source gallery. Target: `#key
 | `#key-visual-slide-6` / `#key-visual-image-6` | `4330:5996` | `assets/key-visual-slide-06.webp` |
 
 Carousel controls: `key-visual-carousel.js`. Styling: `styles.css`. Automated export: `scripts/sync-key-visual-carousel.mjs`, `key-visual-carousel.json`.
+
+## Components carousel — source Section 7
+
+Figma: `zG9GLaQaUXOhPeZC9VOBmx`, `4337:12973`.
+Order follows original artboard layout: tall left frame, upper right frame, lower right frame. Only `#components-media` is replaced; the section heading and copy are preserved.
+
+| HTML ID | GitHub file | Figma Node ID | Asset |
+|---|---|---|---|
+| `#components-media` | `index.html` | `4337:12973` | Carousel container |
+| `#components-carousel` | `index.html` | `4337:12973` | Carousel region |
+| `#components-carousel-track` | `index.html` | `4337:12973` | Slider track |
+| `#components-slide-1` / `#components-image-1` | `index.html` | `4343:12974` | `components-slide-01.webp` |
+| `#components-slide-2` / `#components-image-2` | `index.html` | `4337:9058` | `components-slide-02.webp` |
+| `#components-slide-3` / `#components-image-3` | `index.html` | `2439:4262` | `components-slide-03.webp` |
+
+Controls: `components-carousel.js`. Styles: `styles.css`. Export automation: `components-carousel.json`, `scripts/sync-components-carousel.mjs`, `.github/workflows/sync-components-carousel.yml`.
