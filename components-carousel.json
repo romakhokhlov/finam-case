@@ -1,0 +1,24 @@
+{
+  "fileKey": "zG9GLaQaUXOhPeZC9VOBmx",
+  "sourceSectionId": "4337:12973",
+  "targetHtmlId": "components-media",
+  "quality": 84,
+  "maximumPixelWidth": 1648,
+  "frames": [
+    {
+      "id": "4343:12974",
+      "name": "components-slide-01",
+      "caption": "Tariffs components"
+    },
+    {
+      "id": "4337:9058",
+      "name": "components-slide-02",
+      "caption": "Content components"
+    },
+    {
+      "id": "2439:4262",
+      "name": "components-slide-03",
+      "caption": "Finam component variations"
+    }
+  ]
+}
