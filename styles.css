@@ -85,7 +85,7 @@ h1{text-transform:lowercase}
 #modular-carousel{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:2;outline-offset:-4px;}
 #modular-carousel-viewport{width:min(65%,824px);height:100%;overflow:hidden;}
 #modular-carousel-track{height:100%;display:flex;transition:transform .45s ease;will-change:transform;}
-#modular-carousel .modular-slide{flex:0 0 100%;height:100%;min-width:0;display:flex;align-items:center;justify-content:center;padding:28px 0 42px;}
+#modular-carousel .modular-slide{flex:0 0 100%;height:100%;min-width:0;display:flex;align-items:center;justify-content:center;padding:28px 0 84px;}
 #modular-carousel .modular-slide img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;border-radius:0;box-shadow:none}
 #modular-carousel .modular-control{position:absolute;z-index:4;top:50%;transform:translateY(-50%);border:1px solid rgba(255,255,255,.3);border-radius:50%;background:rgba(15,15,20,.5);color:white;width:40px;height:40px;font:30px/1 Arial,sans-serif;cursor:pointer;display:grid;place-items:center;}
 #modular-carousel .modular-prev{left:3.5%;}
@@ -95,7 +95,7 @@ h1{text-transform:lowercase}
 #modular-carousel .modular-dot.is-current{background:#fff;}
 @media(max-width:767px){
   #modular-carousel-viewport{width:90%;}
-  #modular-carousel .modular-slide{padding:20px 0 34px;}
+  #modular-carousel .modular-slide{padding:20px 0 68px;}
   #modular-carousel .modular-control{width:30px;height:30px;font-size:23px;}
   #modular-carousel .modular-prev{left:1%;}
   #modular-carousel .modular-next{right:1%;}
@@ -184,7 +184,7 @@ h1{text-transform:lowercase}
 }
 #components-carousel .components-slide{
   flex:0 0 100%;min-width:0;height:100%;
-  display:flex;align-items:center;justify-content:center;padding:28px 0 42px;
+  display:flex;align-items:center;justify-content:center;padding:28px 0 84px;
 }
 #components-carousel .components-slide img{
   display:block;max-width:100%;max-height:100%;width:auto;height:auto;
@@ -211,7 +211,7 @@ h1{text-transform:lowercase}
 #components-carousel .components-dot:focus-visible{outline:2px solid #fff;outline-offset:3px;}
 @media(max-width:767px){
   #components-carousel-viewport{width:91%;}
-  #components-carousel .components-slide{padding:16px 0 34px;}
+  #components-carousel .components-slide{padding:16px 0 68px;}
   #components-carousel .components-control{width:30px;height:30px;font-size:23px;}
   #components-carousel .components-prev{left:1%;}
   #components-carousel .components-next{right:1%;}
