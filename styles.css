@@ -73,3 +73,34 @@ h1{text-transform:lowercase}
   .page-previews{grid-template-columns:1fr 1fr}
   .page-shot img{width:100%;height:auto}
 }
+
+
+/* Finam image panels: requested solid #1B1A2A background. */
+#hero-showcase,#key-visual-media,#modular-media,#components-media,#examples-media{background:#1B1A2A;}
+#hero-showcase>.background-pattern,#key-visual-media>.background-pattern,#components-media>.background-pattern,#examples-media>.background-pattern{display:none;}
+/* Reuse the exact hero tile radius and shadow for artwork surfaces. */
+#key-visual-image,#component-stack img,#examples-media .page-shot img,#modular-carousel .modular-slide img{
+  border-radius:10px;
+  box-shadow:0 20px 55px rgba(0,0,0,.45);
+}
+#component-stack img,#examples-media .page-shot img{overflow:hidden;}
+/* The carousel is an overlay inside the existing fixed-size media panel. */
+#modular-carousel{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:2;outline-offset:-4px;}
+#modular-carousel-viewport{width:min(65%,824px);height:100%;overflow:hidden;}
+#modular-carousel-track{height:100%;display:flex;transition:transform .45s ease;will-change:transform;}
+#modular-carousel .modular-slide{flex:0 0 100%;height:100%;min-width:0;display:flex;align-items:center;justify-content:center;padding:28px 0 42px;}
+#modular-carousel .modular-slide img{display:block;max-width:100%;max-height:100%;height:auto;width:auto;object-fit:contain;}
+#modular-carousel .modular-control{position:absolute;z-index:4;top:50%;transform:translateY(-50%);border:1px solid rgba(255,255,255,.3);border-radius:50%;background:rgba(15,15,20,.5);color:white;width:40px;height:40px;font:30px/1 Arial,sans-serif;cursor:pointer;display:grid;place-items:center;}
+#modular-carousel .modular-prev{left:3.5%;}
+#modular-carousel .modular-next{right:3.5%;}
+#modular-carousel .modular-pagination{position:absolute;z-index:4;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:10px;}
+#modular-carousel .modular-dot{width:8px;height:8px;border:0;border-radius:50%;padding:0;background:rgba(255,255,255,.4);cursor:pointer;}
+#modular-carousel .modular-dot.is-current{background:#fff;}
+@media(max-width:767px){
+  #modular-carousel-viewport{width:90%;}
+  #modular-carousel .modular-slide{padding:20px 0 34px;}
+  #modular-carousel .modular-control{width:30px;height:30px;font-size:23px;}
+  #modular-carousel .modular-prev{left:1%;}
+  #modular-carousel .modular-next{right:1%;}
+}
+@media(prefers-reduced-motion:reduce){#modular-carousel-track{transition:none;}}
