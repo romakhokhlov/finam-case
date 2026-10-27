@@ -26,11 +26,8 @@ for(const section of spec.sections||[]){
   layers.forEach((node,i)=>entries.push({name:section.prefix+'-'+String(i+1).padStart(2,'0'),nodeId:node.id,maxWidth:section.maxWidth,quality:section.quality||84,source:node}));
 }
 const results=[];
+const render=await figma('/images/'+spec.fileKey+'?ids='+encodeURIComponent(entries.map(e=>e.nodeId).join(','))+'&format=png&scale=1');
 for(const e of entries){
-  const w=e.source;
-  const width=w.absoluteBoundingBox?.width||w.size?.x;
-  const scale=Math.min(Number(spec.maxScale||2),2,e.maxWidth/width);
-  const render=await figma('/images/'+spec.fileKey+'?ids='+encodeURIComponent(e.nodeId)+'&format=png&scale='+scale.toFixed(5));
   const url=render.images?.[e.nodeId];if(!url)throw new Error('Missing render '+e.name);
   const input=Buffer.from(await (await fetch(url)).arrayBuffer());
   const meta=await sharp(input).metadata();
