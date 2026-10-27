@@ -1,0 +1,39 @@
+{
+  "fileKey": "zG9GLaQaUXOhPeZC9VOBmx",
+  "sourceSectionId": "4330:6979",
+  "targetHtmlId": "key-visual-media",
+  "quality": 84,
+  "maximumPixelWidth": 1660,
+  "frames": [
+    {
+      "id": "4330:5948",
+      "name": "key-visual-slide-01",
+      "caption": "Finam Demo — first variation"
+    },
+    {
+      "id": "4330:5973",
+      "name": "key-visual-slide-02",
+      "caption": "Finam Demo — second variation"
+    },
+    {
+      "id": "4330:5902",
+      "name": "key-visual-slide-03",
+      "caption": "Finam website — third variation"
+    },
+    {
+      "id": "4330:5925",
+      "name": "key-visual-slide-04",
+      "caption": "Finam website — fourth variation"
+    },
+    {
+      "id": "4330:6019",
+      "name": "key-visual-slide-05",
+      "caption": "Finam Demo — fifth variation"
+    },
+    {
+      "id": "4330:5996",
+      "name": "key-visual-slide-06",
+      "caption": "Finam Demo — sixth variation"
+    }
+  ]
+}
