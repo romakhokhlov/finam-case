@@ -1,7 +1,10 @@
 {
-  "fileKey": "nCV6hHOEJCYoKib0o0MP5O",
-  "maxScale": 2,
-  "sections": [
-    {"nodeId":"2472:64076","prefix":"modular-slide","maxWidth":1648,"quality":84}
+  "fileKey": "zG9GLaQaUXOhPeZC9VOBmx",
+  "slides": [
+    {"nodeId":"4315:62168","name":"modular-slide-01","maxWidth":1648,"quality":84},
+    {"nodeId":"4315:62230","name":"modular-slide-02","maxWidth":1648,"quality":84},
+    {"nodeId":"4315:62292","name":"modular-slide-03","maxWidth":1648,"quality":84},
+    {"nodeId":"4315:62380","name":"modular-slide-04","maxWidth":1648,"quality":84},
+    {"nodeId":"4315:62440","name":"modular-slide-05","maxWidth":1648,"quality":84}
   ]
 }
