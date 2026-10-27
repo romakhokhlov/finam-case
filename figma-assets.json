@@ -6,5 +6,9 @@
     {"nodeId":"4315:62292","name":"modular-slide-03","maxWidth":1648,"quality":84},
     {"nodeId":"4315:62380","name":"modular-slide-04","maxWidth":1648,"quality":84},
     {"nodeId":"4315:62440","name":"modular-slide-05","maxWidth":1648,"quality":84}
+  ],
+  "hero": [
+    {"nodeId":"4315:59451","name":"hero-demo-left","maxWidth":1440,"quality":84},
+    {"nodeId":"4315:59621","name":"hero-demo-right","maxWidth":1440,"quality":84}
   ]
 }
