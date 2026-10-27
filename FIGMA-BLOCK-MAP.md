@@ -59,3 +59,21 @@ All HTML targets are in `index.html`. CSS: `styles.css`. Inspector: `debug-block
 | Results metrics grid | `#results-grid` | `index.html` | `2301:801` |
 
 To inspect the site, open `https://finam-case.pages.dev/?debug=blocks`. Click a labeled block to copy its ID. Without the query parameter the inspector does not run.
+
+## Modular carousel — new Figma source
+
+Source file: `zG9GLaQaUXOhPeZC9VOBmx`; section `4308:3229`.
+
+| Site ID | GitHub file | Figma node |
+|---|---|---|
+| `#modular-media` | `index.html` | `4308:3229` |
+| `#modular-carousel` | `index.html` | `4308:3229` |
+| `#modular-carousel-viewport` | `index.html` | `4308:3229` |
+| `#modular-carousel-track` | `index.html` | `4308:3229` |
+| `#modular-image-38` | `index.html` | `4308:3230` |
+| `#modular-image-39` | `index.html` | `4308:3231` |
+| `#modular-image-40` | `index.html` | `4308:3232` |
+| `#modular-image-41` | `index.html` | `4308:3233` |
+| `#modular-image-45` | `index.html` | `4308:3234` |
+
+Carousel behavior: `modular-carousel.js`. Carousel styling: `styles.css`.
