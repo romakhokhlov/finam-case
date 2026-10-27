@@ -77,3 +77,19 @@ Source file: `zG9GLaQaUXOhPeZC9VOBmx`; section `4308:3229`.
 | `#modular-image-45` | `index.html` | `4308:3234` |
 
 Carousel behavior: `modular-carousel.js`. Carousel styling: `styles.css`.
+
+## Key Visual carousel (Figma Section 6)
+
+Figma source: `zG9GLaQaUXOhPeZC9VOBmx`, section `4330:6979`.
+Slides ordered top-to-bottom, left-to-right in the source gallery. Target: `#key-visual-media`.
+
+| HTML ID | Figma node ID | Asset |
+|---|---|---|
+| `#key-visual-slide-1` / `#key-visual-image-1` | `4330:5948` | `assets/key-visual-slide-01.webp` |
+| `#key-visual-slide-2` / `#key-visual-image-2` | `4330:5973` | `assets/key-visual-slide-02.webp` |
+| `#key-visual-slide-3` / `#key-visual-image-3` | `4330:5902` | `assets/key-visual-slide-03.webp` |
+| `#key-visual-slide-4` / `#key-visual-image-4` | `4330:5925` | `assets/key-visual-slide-04.webp` |
+| `#key-visual-slide-5` / `#key-visual-image-5` | `4330:6019` | `assets/key-visual-slide-05.webp` |
+| `#key-visual-slide-6` / `#key-visual-image-6` | `4330:5996` | `assets/key-visual-slide-06.webp` |
+
+Carousel controls: `key-visual-carousel.js`. Styling: `styles.css`. Automated export: `scripts/sync-key-visual-carousel.mjs`, `key-visual-carousel.json`.
