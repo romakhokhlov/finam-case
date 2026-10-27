@@ -104,3 +104,21 @@ h1{text-transform:lowercase}
   #modular-carousel .modular-next{right:1%;}
 }
 @media(prefers-reduced-motion:reduce){#modular-carousel-track{transition:none;}}
+
+/* Page examples: show each complete image with equal rounding on all four corners.
+   The old .page-shot {height:100%;overflow:hidden} clipped image bottoms and shadows. */
+#examples-media .page-shot{
+  height:auto;
+  min-height:0;
+  align-self:start;
+  overflow:visible;
+  border-radius:10px;
+  box-shadow:0 20px 55px rgba(0,0,0,.45);
+}
+#examples-media .page-shot img{
+  display:block;
+  width:100%;
+  height:auto;
+  border-radius:10px;
+  box-shadow:none;
+}
