@@ -23,11 +23,11 @@ for(const section of spec.sections||[]){
   if(!root) throw new Error('Missing section node '+section.nodeId);
   const layers=[];walk(root,layers);
   if(!layers.length) throw new Error('No IMAGE layers found inside '+section.nodeId);
-  layers.forEach((node,i)=>entries.push({name:section.prefix+'-'+String(i+1).padStart(2,'0'),nodeId:node.id,maxWidth:section.maxWidth,quality:section.quality||84}));
+  layers.forEach((node,i)=>entries.push({name:section.prefix+'-'+String(i+1).padStart(2,'0'),nodeId:node.id,maxWidth:section.maxWidth,quality:section.quality||84,source:node}));
 }
 const results=[];
 for(const e of entries){
-  const w=(await figma('/files/'+spec.fileKey+'/nodes?ids='+encodeURIComponent(e.nodeId))).nodes[e.nodeId].document;
+  const w=e.source;
   const width=w.absoluteBoundingBox?.width||w.size?.x;
   const scale=Math.min(Number(spec.maxScale||2),2,e.maxWidth/width);
   const render=await figma('/images/'+spec.fileKey+'?ids='+encodeURIComponent(e.nodeId)+'&format=png&scale='+scale.toFixed(5));
