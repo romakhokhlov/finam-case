@@ -167,7 +167,9 @@ h1{text-transform:lowercase}
   /* Keep the original bottom spacing; offset the mobile carousel 17px from the top. */
   #key-visual-carousel{inset:17px 0 0;}
   #key-visual-carousel-viewport{width:90%;}
-  #key-visual-carousel .key-visual-slide{padding:20px 0 108px;}
+  /* Halve the 75px pagination-to-bottom spacing while preserving the 25px image-to-dots gap. */
+  #key-visual-carousel .key-visual-slide{padding:20px 0 70.5px;}
+  #key-visual-carousel .key-visual-pagination{bottom:37.5px;}
   #key-visual-carousel .key-visual-control{width:30px;height:30px;font-size:23px;}
   #key-visual-carousel .key-visual-prev{left:1%;}
   #key-visual-carousel .key-visual-next{right:1%;}
