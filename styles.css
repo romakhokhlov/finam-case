@@ -164,12 +164,16 @@ h1{text-transform:lowercase}
 #key-visual-carousel .key-visual-control:focus-visible,
 #key-visual-carousel .key-visual-dot:focus-visible{outline:2px solid #fff;outline-offset:3px;}
 @media(max-width:767px){
-  /* Keep the original bottom spacing; offset the mobile carousel 17px from the top. */
-  #key-visual-carousel{inset:17px 0 0;}
-  #key-visual-carousel-viewport{width:90%;}
-  /* Halve the 75px pagination-to-bottom spacing while preserving the 25px image-to-dots gap. */
-  #key-visual-carousel .key-visual-slide{padding:20px 0 70.5px;}
-  #key-visual-carousel .key-visual-pagination{bottom:37.5px;}
+  /* Size the carousel from its slides and pagination; the media panel adds 34px padding. */
+  #key-visual-media > .media-artboard{height:auto;}
+  #key-visual-carousel{position:relative;inset:auto;flex-direction:column;}
+  #key-visual-carousel-viewport{width:90%;height:auto;}
+  #key-visual-carousel-track{height:auto;align-items:stretch;}
+  #key-visual-carousel .key-visual-slide{height:auto;padding:0;justify-content:center;}
+  #key-visual-carousel .key-visual-slide img{max-height:none;}
+  #key-visual-carousel .key-visual-pagination{
+    position:static;bottom:auto;left:auto;transform:none;margin-top:25px;
+  }
   #key-visual-carousel .key-visual-control{width:30px;height:30px;font-size:23px;}
   #key-visual-carousel .key-visual-prev{left:1%;}
   #key-visual-carousel .key-visual-next{right:1%;}
@@ -279,7 +283,7 @@ h1{text-transform:lowercase}
   #results-grid .stat-card strong{margin-bottom:4.0625vw}
 
   /* Every artwork area remains full-bleed; each gallery has its own size. */
-  #key-visual-media{height:clamp(340px,91vw,414px)}
+  #key-visual-media{height:auto;min-height:0;padding-block:34px}
   #modular-media{height:clamp(420px,112vw,490px)}
   #components-media{height:clamp(460px,126vw,560px)}
   #key-visual-carousel-viewport{width:90%}
