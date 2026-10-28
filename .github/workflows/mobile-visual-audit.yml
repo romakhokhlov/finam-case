@@ -16,6 +16,13 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+      - name: Verify static build and carousel scripts
+        run: |
+          node scripts/verify-assets.mjs
+          node --check modular-carousel.js
+          node --check key-visual-carousel.js
+          node --check components-carousel.js
+          git diff --check
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -114,6 +121,20 @@ jobs:
                               print("WARNING_HORIZONTAL_OVERFLOW",width,data["docWidth"])
                           else:
                               print("NO_HORIZONTAL_OVERFLOW",width)
+                      if name=="finam" and width==390:
+                          for elem in ("one","two","three","four","five","six"):
+                              sel="#example-image-"+elem
+                              page.locator(sel).scroll_into_view_if_needed(timeout=12000)
+                              page.wait_for_function("sel => {const im=document.querySelector(sel);return im && im.complete && im.naturalWidth>0}",arg=sel,timeout=16000)
+                          for root,next_button,dot in (
+                              ("#key-visual-carousel",".key-visual-next",".key-visual-dot"),
+                              ("#modular-carousel",".modular-next",".modular-dot"),
+                              ("#components-carousel",".components-next",".components-dot")):
+                              page.locator(root).scroll_into_view_if_needed(timeout=12000)
+                              page.locator(root+" "+next_button).click(timeout=12000)
+                              dots=page.locator(root+" "+dot)
+                              assert dots.nth(1).get_attribute("class") is not None and "is-current" in dots.nth(1).get_attribute("class"), root+" second slide did not activate"
+                          print("PASSED_MOBILE_GALLERY_AND_CAROUSEL_INTERACTION_TESTS")
                       print("AUDIT",name,width,"body",data.get("body"),
                             "lead",data.get("css",{}).get(".lead"),
                             "section_title",data.get("css",{}).get(".section-title"),
