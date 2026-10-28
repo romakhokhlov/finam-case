@@ -233,18 +233,25 @@ h1{text-transform:lowercase}
     font-size:8.125vw;line-height:1;
   }
   .intro{padding-top:15vw;gap:0}
+  /* Reference: 320px design canvas, transform:scale(viewport / 320).
+     Match its rendered font size and line pitch without scaling media or page geometry. */
   #case-title,.lead{
     font-family:'Unbounded',sans-serif;
-    font-size:7.8125vw;font-weight:400;line-height:1.44;
+    font-size:7.8125vw;font-weight:400;line-height:11.25vw; /* 25px / 36px × viewport/320 */
     letter-spacing:normal;font-synthesis:none;
   }
+  /* The reference separates the intro headline from body copy by 24 design px. */
+  .intro .lead{margin-bottom:7.5vw}
   .body-text,.feature-copy p,.results-intro p,.info-card p,.stat-card p{
     font-family:'Poppins',Arial,sans-serif;
-    font-size:5vw;font-weight:400;line-height:1.5;letter-spacing:normal;
+    font-size:5vw;font-weight:400;line-height:7.5vw; /* 16px / 24px × viewport/320 */
+    letter-spacing:normal;font-synthesis:none;
   }
   .section-title,.info-card h3{
     font-family:'Unbounded',sans-serif;
-    font-size:5vw;font-weight:400;line-height:1.5;
+    font-size:5vw;font-weight:400;line-height:7.5vw;
+    /* Readymag section labels include 13 design px of bottom padding inside the widget. */
+    padding-bottom:4.0625vw;
     letter-spacing:normal;font-synthesis:none;
   }
   /* Text in the reference flows immediately after its subsection heading. */
@@ -256,7 +263,7 @@ h1{text-transform:lowercase}
   .stat-card{padding:var(--pad)}
   .stat-card strong{
     font-family:'Unbounded',sans-serif;
-    font-size:7.8125vw;font-weight:400;line-height:1.44;letter-spacing:normal;
+    font-size:7.8125vw;font-weight:400;line-height:11.25vw;letter-spacing:normal;
     white-space:normal;font-synthesis:none;
   }
 
