@@ -258,8 +258,11 @@ h1{text-transform:lowercase}
   }
   /* Text in the reference flows immediately after its subsection heading. */
   .feature-copy .section-title,.results-intro .section-title,.info-card h3{margin-bottom:0}
-  /* Insights has no introductory paragraph, so its cards retain a separation. */
-  .insights .section-title{margin-bottom:var(--pad)}
+  /* Mobile Readymag rhythm on a 320px design canvas:
+     13px heading padding + 11px following margin = 24px before cards.
+     14px inter-card spacing scales with the viewport (20px at 449px). */
+  .insights .section-title{margin-bottom:3.4375vw}
+  #insights .insight-grid{gap:4.375vw}
   .info-card{padding:var(--pad)}
   .results-grid{grid-template-columns:minmax(0,1fr)}
   .stat-card{padding:var(--pad)}
