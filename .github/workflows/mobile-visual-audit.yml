@@ -1,0 +1,121 @@
+name: Mobile visual comparison (375 / 390 / 430)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'styles.css'
+      - '.github/workflows/mobile-visual-audit.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install headless Chromium for real mobile viewport screenshots
+        run: |
+          python -m pip install playwright==1.56.0
+          python -m playwright install chromium
+      - name: Start local static site
+        run: |
+          python -m http.server 4173 --bind 127.0.0.1 > /tmp/finam-local-server.log 2>&1 &
+          sleep 2
+      - name: Compare reference and local site at 3 mobile sizes
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          Path("mobile-visual-audit").mkdir(exist_ok=True)
+          report = {}
+          urls = {
+              "reference": "https://readymag.website/u875042579/5202538/",
+              "finam": "http://127.0.0.1:4173/"
+          }
+          def inspect(page):
+              return page.evaluate("""() => {
+                const fields = el => {
+                  if (!el) return null;
+                  const s = getComputedStyle(el), r = el.getBoundingClientRect();
+                  return {tag:el.tagName, text:(el.innerText||'').trim().slice(0,90),
+                    x:+r.x.toFixed(1),y:+r.y.toFixed(1),w:+r.width.toFixed(1),h:+r.height.toFixed(1),
+                    font:s.fontFamily,size:s.fontSize,weight:s.fontWeight,lineHeight:s.lineHeight,
+                    letterSpacing:s.letterSpacing,color:s.color, marginLeft:s.marginLeft,
+                    marginRight:s.marginRight,paddingLeft:s.paddingLeft,paddingRight:s.paddingRight};
+                };
+                const sel = ['main','.wrap','.intro','h1','.lead','.body-text','.section-title',
+                  '.info-card','.info-card h3','.info-card p','.feature-copy',
+                  '.hero-media','.hero-tile','.tile-one','.tile-two',
+                  '#key-visual-media','#key-visual-carousel-viewport','.key-visual-slide img',
+                  '#modular-media','#modular-carousel-viewport','.modular-slide img',
+                  '#components-media','#components-carousel-viewport','.components-slide img',
+                  '#examples-media','.examples-stack','.page-previews','.page-shot',
+                  '.results','.results-grid','.stat-card','.stat-card strong','.stat-card p'];
+                const visible = [...document.querySelectorAll('h1,h2,h3,h4,p,strong')]
+                  .filter(e => {const r=e.getBoundingClientRect();return r.width>0&&r.height>0
+                    &&getComputedStyle(e).visibility!=='hidden';}).slice(0,42).map(fields);
+                return {viewport:innerWidth,docWidth:document.documentElement.scrollWidth,
+                  docHeight:document.documentElement.scrollHeight,body:fields(document.body),
+                  css: Object.fromEntries(sel.map(s=>[s,fields(document.querySelector(s))])),
+                  visibleText:visible,
+                  fonts:[...document.fonts].map(f=>({family:f.family,weight:f.weight,status:f.status})).slice(0,20)};
+              }""")
+          with sync_playwright() as p:
+              browser = p.chromium.launch(headless=True,args=["--no-sandbox"])
+              for width in (375,390,430):
+                  report[str(width)] = {}
+                  for name,url in urls.items():
+                      context=browser.new_context(viewport={"width":width,"height":844},
+                          device_scale_factor=1,is_mobile=True,has_touch=True)
+                      page=context.new_page()
+                      error=None
+                      try:
+                          page.goto(url,wait_until="domcontentloaded",timeout=65000)
+                          page.wait_for_timeout(2600)
+                          page.evaluate("() => document.fonts.ready")
+                      except Exception as exc:
+                          error=str(exc)
+                      try:
+                          data=inspect(page)
+                      except Exception as exc:
+                          data={"error":str(exc)}
+                      data["navigationError"]=error
+                      report[str(width)][name]=data
+                      height=data.get("docHeight",0)
+                      try:
+                          page.screenshot(path="mobile-visual-audit/"+name+"-"+str(width)+".png",
+                            full_page=bool(height<20000),animations="disabled",timeout=25000)
+                      except Exception as exc:
+                          print("SCREENSHOT_FAILED",name,width,str(exc))
+                      if name=="finam":
+                          if data.get("docWidth",0) > width+2:
+                              print("WARNING_HORIZONTAL_OVERFLOW",width,data["docWidth"])
+                          else:
+                              print("NO_HORIZONTAL_OVERFLOW",width)
+                      print("AUDIT",name,width,"body",data.get("body"),
+                            "lead",data.get("css",{}).get(".lead"),
+                            "section_title",data.get("css",{}).get(".section-title"),
+                            "docWidth",data.get("docWidth"))
+                      context.close()
+              browser.close()
+          Path("mobile-visual-audit/metrics.json").write_text(
+              json.dumps(report,ensure_ascii=False,indent=2),encoding="utf8")
+          print("AUDIT_METRICS_JSON_BEGIN")
+          print(json.dumps(report,ensure_ascii=False))
+          print("AUDIT_METRICS_JSON_END")
+          PY
+      - name: Upload mobile comparison screenshots and computed CSS metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: finam-mobile-audit
+          path: mobile-visual-audit/
+          if-no-files-found: warn
