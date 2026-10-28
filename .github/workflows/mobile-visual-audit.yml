@@ -77,7 +77,7 @@ jobs:
         run: |
           python -m http.server 4173 --bind 127.0.0.1 > /tmp/finam-local-server.log 2>&1 &
           sleep 2
-      - name: Verify mobile headings are genuine 600, desktop unchanged
+      - name: Verify mobile headings are genuine 700, desktop unchanged
         run: |
           python - <<'PY'
           from playwright.sync_api import sync_playwright
@@ -92,12 +92,12 @@ jobs:
                 const weight=s=>getComputedStyle(document.querySelector(s)).fontWeight;
                 return {h1:weight('#case-title'),section:weight('.section-title'),
                   card:weight('.info-card h3'),metric:weight('.stat-card strong'),
-                  lead:weight('.lead'), loaded600:document.fonts.check('600 18px Unbounded')};
+                  lead:weight('.lead'), loaded700:document.fonts.check('700 18px Unbounded')};
               }""")
               if w<=767:
-                assert all(values[x]=='600' for x in ('h1','section','card','metric')),f'Mobile heading weight wrong {w}: {values}'
+                assert all(values[x]=='700' for x in ('h1','section','card','metric')),f'Mobile heading weight wrong {w}: {values}'
                 assert values['lead']=='400',f'Intro lead unexpectedly changed {w}: {values}'
-                assert values['loaded600'],f'Unbounded 600 face missing {w}'
+                assert values['loaded700'],f'Unbounded 700 face missing {w}'
               else:
                 assert all(values[x]=='700' for x in ('h1','section','card','metric')),f'Desktop heading weight changed {w}: {values}'
               print('HEADING_WEIGHT_OK',w,values)
