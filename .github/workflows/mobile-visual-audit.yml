@@ -61,11 +61,13 @@ jobs:
                   '.results','.results-grid','.stat-card','.stat-card strong','.stat-card p'];
                 const visible = [...document.querySelectorAll('h1,h2,h3,h4,p,strong')]
                   .filter(e => {const r=e.getBoundingClientRect();return r.width>0&&r.height>0
-                    &&getComputedStyle(e).visibility!=='hidden';}).slice(0,42).map(fields);
+                    &&getComputedStyle(e).visibility!=='hidden';}).slice(0,100).map(fields);
                 return {viewport:innerWidth,docWidth:document.documentElement.scrollWidth,
                   docHeight:document.documentElement.scrollHeight,body:fields(document.body),
                   css: Object.fromEntries(sel.map(s=>[s,fields(document.querySelector(s))])),
                   visibleText:visible,
+                  sections:[...document.querySelectorAll('main>section')].map(fields),
+                  images:[...document.images].slice(0,120).map(el=>{const r=el.getBoundingClientRect();return {src:(el.currentSrc||el.src||'').slice(-130),x:+r.x.toFixed(1),y:+r.y.toFixed(1),w:+r.width.toFixed(1),h:+r.height.toFixed(1),naturalW:el.naturalWidth,naturalH:el.naturalHeight};}),
                   fonts:[...document.fonts].map(f=>({family:f.family,weight:f.weight,status:f.status})).slice(0,20)};
               }""")
           with sync_playwright() as p:
@@ -81,6 +83,9 @@ jobs:
                           page.goto(url,wait_until="domcontentloaded",timeout=65000)
                           page.wait_for_timeout(2600)
                           page.evaluate("() => document.fonts.ready")
+                          if name=="reference":
+                              try: page.get_by_text("Reject all",exact=True).first.click(timeout=1500)
+                              except Exception: pass
                       except Exception as exc:
                           error=str(exc)
                       try:
@@ -95,6 +100,15 @@ jobs:
                             full_page=bool(height<20000),animations="disabled",timeout=25000)
                       except Exception as exc:
                           print("SCREENSHOT_FAILED",name,width,str(exc))
+                      if name=="reference" and width==390:
+                          for label in ("hypotheses","main screen","connected user widget","results"):
+                              try:
+                                  target=page.get_by_text(label,exact=True).first
+                                  target.scroll_into_view_if_needed(timeout=5000)
+                                  page.wait_for_timeout(350)
+                                  page.screenshot(path="mobile-visual-audit/reference-390-"+label.replace(" ","-")+".png",full_page=False,animations="disabled",timeout=15000)
+                              except Exception as exc:
+                                  print("SECTION_SCREENSHOT_FAILED",label,str(exc))
                       if name=="finam":
                           if data.get("docWidth",0) > width+2:
                               print("WARNING_HORIZONTAL_OVERFLOW",width,data["docWidth"])
