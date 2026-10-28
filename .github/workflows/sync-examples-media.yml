@@ -1,0 +1,76 @@
+name: Sync examples-media images from Figma
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/sync-examples-media.mjs'
+      - '.github/workflows/sync-examples-media.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: examples-media-figma-export
+  cancel-in-progress: false
+
+jobs:
+  export-examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check configured Figma token
+        env:
+          FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
+        run: |
+          if [ -z "$FIGMA_TOKEN" ]; then
+            echo "::error::Missing FIGMA_TOKEN repository secret"
+            exit 1
+          fi
+
+      - name: Install image optimizer
+        run: npm install --no-save --no-package-lock sharp@0.34.4
+
+      - name: Validate export script
+        run: node --check scripts/sync-examples-media.mjs
+
+      - name: Render six individual images and optimize to WebP
+        env:
+          FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
+        run: node scripts/sync-examples-media.mjs
+
+      - name: Verify asset references
+        run: |
+          node scripts/verify-assets.mjs
+          git diff --check
+          git status --short
+
+      - name: Commit only requested images to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- assets/image-49.webp assets/image-50.webp assets/image-46.webp assets/image-48.webp assets/image-67.webp assets/image-69.webp
+          if git diff --cached --quiet; then
+            echo "Six example images already up to date"
+          else
+            git commit -m "Refresh six examples-media images from Figma"
+            for attempt in 1 2 3 4 5; do
+              git fetch origin main
+              if git pull --rebase origin main && git push origin HEAD:main; then
+                exit 0
+              fi
+              if [ "$attempt" -eq 5 ]; then
+                echo "::error::Failed to publish after 5 attempts"
+                exit 1
+              fi
+              sleep 5
+            done
+          fi
