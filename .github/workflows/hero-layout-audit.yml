@@ -28,7 +28,7 @@ jobs:
           python-version: '3.12'
       - name: Install headless Chromium
         run: |
-          python -m pip install playwright==1.56.0
+          python -m pip install playwright==1.56.0 Pillow
           python -m playwright install chromium
       - name: Launch static web server
         run: |
@@ -109,6 +109,34 @@ jobs:
                 c.close()
             browser.close()
           Path('hero-audit/metrics.json').write_text(json.dumps(output,ensure_ascii=False,indent=2))
+          # The reference picture and our artboard must occupy the same measured rectangle;
+          # assert this directly, independently of what their images depict.
+          for width in (320,375,390,430,768,1024,1440):
+            ref=output[str(width)]['reference']['focus']
+            site=output[str(width)]['finam']['boards'][1]
+            for field in ('x','w','h'):
+              delta=abs(ref[field]-site[field])
+              print('HERO_GEOMETRY',width,field,'reference',ref[field],'finam',site[field],'delta',round(delta,2))
+              assert delta<1.15, f'Hero geometry mismatch at {width}: {field} {delta}'
+            art=output[str(width)]['finam']['boards'][1]
+            panes=output[str(width)]['finam']['imgsFinam']
+            for pane in panes:
+              box=pane['parent']
+              assert box['w']>0 and box['h']>0
+              assert box['x']>=art['x']-1
+              assert box['x']+box['w']<=art['x']+art['w']+1
+          print('HERO_REFERENCE_GEOMETRY_ASSERTIONS_PASSED')
+          from PIL import Image
+          import io, base64
+          for name in ('reference','finam'):
+            for width in (390,1440):
+              src=Path(f'hero-audit/{name}-{width}.png')
+              if not src.exists():continue
+              im=Image.open(src).convert('RGB')
+              im.thumbnail((600,720))
+              bio=io.BytesIO()
+              im.save(bio,format='JPEG',quality=52,optimize=True)
+              print('HERO_VISUAL_PREVIEW',name,width,base64.b64encode(bio.getvalue()).decode('ascii'))
           PY
       - name: Archive comparison screenshots
         if: always()
