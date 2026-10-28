@@ -142,6 +142,43 @@ jobs:
               im.save(bio,format='JPEG',quality=52,optimize=True)
               print('HERO_VISUAL_PREVIEW',name,width,base64.b64encode(bio.getvalue()).decode('ascii'))
           PY
+      - name: Compare published hero screenshot to local build
+        run: |
+          python - <<'PY'
+          import io
+          from PIL import Image, ImageChops
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          with sync_playwright() as p:
+            b=p.chromium.launch(headless=True,args=['--no-sandbox'])
+            for width,height in ((390,844),(1440,900)):
+              frames={}
+              for name,url in (('local','http://127.0.0.1:4173/'),('published','https://finam-case.pages.dev/')):
+                c=b.new_context(viewport={'width':width,'height':height},device_scale_factor=1,is_mobile=width<768,has_touch=width<768)
+                page=c.new_page()
+                page.goto(url,wait_until='networkidle',timeout=60000)
+                page.wait_for_function("""() => [...document.querySelectorAll('#hero-artboard img')].every(im=>im.complete && im.naturalWidth>0)""",timeout=20000)
+                box=page.locator('#hero-artboard').bounding_box()
+                assert box and abs(box['x']-(width*.025 if width<768 else 66))<1.2,(name,width,box)
+                assert abs(box['width']-(width*.9125 if width<768 else 1268))<1.2,(name,width,box)
+                assert abs(box['height']-(width*.4875 if width<768 else 676))<1.2,(name,width,box)
+                pane=page.locator('#hero-showcase')
+                pane.scroll_into_view_if_needed()
+                page.wait_for_timeout(250)
+                shot=pane.screenshot(animations='disabled')
+                Image.open(io.BytesIO(shot)).save(Path('hero-audit')/f'{name}-live-{width}.png')
+                frames[name]=Image.open(io.BytesIO(shot)).convert('RGB')
+                c.close()
+              a,z=frames['local'],frames['published']
+              assert a.size==z.size,(width,a.size,z.size)
+              diff=ImageChops.difference(a,z)
+              changed=sum(1 for pixel in diff.getdata() if max(pixel)>25)
+              ratio=changed/(a.width*a.height)
+              print('LIVE_HERO_SCREENSHOT_DIFF',width,ratio,'dimensions',a.size)
+              assert ratio<.035,f'Published hero differs from local build at {width}: {ratio:.1%}'
+            b.close()
+          print('LIVE_HERO_DEPLOYMENT_VERIFIED')
+          PY
       - name: Archive comparison screenshots
         if: always()
         uses: actions/upload-artifact@v4
