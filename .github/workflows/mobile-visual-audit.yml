@@ -76,6 +76,70 @@ jobs:
         run: |
           python -m http.server 4173 --bind 127.0.0.1 > /tmp/finam-local-server.log 2>&1 &
           sleep 2
+      - name: Assert visual parity for identical text in reference and Finam
+        run: |
+          python - <<'PY'
+          import json
+          from playwright.sync_api import sync_playwright
+          samples={
+            'body': 'To speed up page creation, a system of reusable blocks was developed for different content types, including cards, grids, informational sections, and visual layouts.',
+            'large': 'New visual language for Finam that improved consistency across product pages',
+            'section': 'Modular Block System'
+          }
+          js="""(data) => {
+            const isRef=data.isRef;
+            const root=isRef ? document.querySelector('.page-content-container') : document.body;
+            if(!root)throw Error('Missing Readymag mobile canvas');
+            const el=document.createElement('div');
+            el.textContent=data.text;
+            el.style.cssText='position:absolute;top:0;left:0;opacity:0;pointer-events:none;box-sizing:border-box;white-space:normal;z-index:-1;';
+            const isLarge=data.type==='large';
+            const isSection=data.type==='section';
+            el.style.width=isRef?'280px':'87.5vw';
+            el.style.fontFamily=isLarge||isSection?'Unbounded':'Poppins';
+            el.style.fontWeight='400';
+            el.style.fontSize=isRef?(isLarge?'25px':'16px'):(isLarge?'7.8125vw':'5vw');
+            el.style.lineHeight=isRef?(isLarge?'36px':'24px'):(isLarge?'11.25vw':'7.5vw');
+            if(isSection)el.style.paddingBottom=isRef?'13px':'4.0625vw';
+            root.appendChild(el);
+            const r=el.getBoundingClientRect(),c=getComputedStyle(el),range=document.createRange();
+            const text=el.firstChild.textContent,groups=[];
+            for(let i=0;i<text.length;i++){
+              if(!text[i].trim())continue;
+              range.setStart(el.firstChild,i);range.setEnd(el.firstChild,i+1);
+              const rect=range.getBoundingClientRect();
+              const last=groups.at(-1);
+              if(!last||Math.abs(rect.y-last.y)>0.75)groups.push({y:rect.y,chars:''});
+              groups.at(-1).chars+=text[i];
+            }
+            const result={width:r.width,height:r.height,fontSize:c.fontSize,lineHeight:c.lineHeight,
+              count:groups.length,linePitch:groups.length>1?groups[1].y-groups[0].y:null,
+              textLines:groups.map(g=>g.chars)};
+            el.remove();
+            return result;
+          }"""
+          with sync_playwright() as p:
+            b=p.chromium.launch(headless=True,args=['--no-sandbox'])
+            for width in (375,390,430):
+              results={}
+              for name,url in [('reference','https://readymag.website/u875042579/5202538/'),('finam','http://127.0.0.1:4173/')]:
+                c=b.new_context(viewport={'width':width,'height':844},is_mobile=True,has_touch=True)
+                page=c.new_page()
+                page.goto(url,wait_until='domcontentloaded',timeout=65000)
+                page.wait_for_timeout(1400)
+                page.evaluate('() => document.fonts.ready')
+                results[name]={kind:page.evaluate(js,{'isRef':name=='reference','type':kind,'text':text}) for kind,text in samples.items()}
+                c.close()
+              for kind in samples:
+                a=results['reference'][kind];z=results['finam'][kind]
+                sameLines=a['textLines']==z['textLines']
+                dh=abs(a['height']-z['height'])
+                dp=None if a['linePitch'] is None or z['linePitch'] is None else abs(a['linePitch']-z['linePitch'])
+                print('TYPE_PARITY',width,kind,json.dumps({'ref':a,'finam':z,'sameBreaks':sameLines,'heightDelta':dh,'linePitchDelta':dp},ensure_ascii=False))
+                assert sameLines and dh<1.75 and (dp is None or dp<1.25), f'Type mismatch at {width} {kind}: {a} vs {z}'
+            b.close()
+          print('ALL_MOBILE_TEXT_METRIC_PARITY_CHECKS_PASSED')
+          PY
       - name: Compare individual glyph line boxes and widget padding
         run: |
           python - <<'PY'
