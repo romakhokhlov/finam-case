@@ -1,0 +1,119 @@
+name: Hero artwork reference DOM and screenshot audit
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'styles.css'
+      - '.github/workflows/hero-layout-audit.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  hero:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate static site
+        run: |
+          node scripts/verify-assets.mjs
+          node --check modular-carousel.js
+          node --check key-visual-carousel.js
+          node --check components-carousel.js
+          git diff --check
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install headless Chromium
+        run: |
+          python -m pip install playwright==1.56.0
+          python -m playwright install chromium
+      - name: Launch static web server
+        run: |
+          python -m http.server 4173 --bind 127.0.0.1 > /tmp/hero-server.log 2>&1 &
+          sleep 2
+      - name: Measure reference and Finam hero images
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          Path('hero-audit').mkdir(exist_ok=True)
+          script="""(name) => {
+            const rect = el => {
+              if(!el)return null;
+              let s=getComputedStyle(el),r=el.getBoundingClientRect();
+              return {tag:el.tagName,id:el.id||'',className:(typeof el.className==='string'?el.className:'').slice(0,105),
+                x:+r.x.toFixed(2),y:+r.y.toFixed(2),w:+r.width.toFixed(2),h:+r.height.toFixed(2),
+                ow:el.offsetWidth,oh:el.offsetHeight,nw:el.naturalWidth||undefined,nh:el.naturalHeight||undefined,
+                src:(el.currentSrc||el.src||'').slice(-190),left:s.left,top:s.top,bottom:s.bottom,right:s.right,
+                width:s.width,height:s.height,maxWidth:s.maxWidth,maxHeight:s.maxHeight,
+                padding:s.padding,margin:s.margin,bg:s.backgroundColor,bgImg:s.backgroundImage.slice(0,150),
+                radius:s.borderRadius,fit:s.objectFit,objectPosition:s.objectPosition,
+                transform:s.transform,origin:s.transformOrigin,zIndex:s.zIndex,
+                overflow:s.overflow,position:s.position,display:s.display,align:s.alignItems,
+                justify:s.justifyContent,opacity:s.opacity,aspectRatio:s.aspectRatio,
+                style:(el.getAttribute('style')||'').slice(0,250)};
+            };
+            const images=[...document.images].map(rect).filter(v=>v&&v.w>0&&v.h>0&&v.y<2500);
+            const focus=name==='reference' ? [...document.images].find(im=>{
+                let r=im.getBoundingClientRect();
+                return r.width>100 && r.height>60 && r.top>250 && r.top<1500;
+            }) : document.querySelector('#hero-image-left img');
+            const ancestor=[];
+            let n=focus;
+            for(let i=0;n&&i<12;i++,n=n.parentElement)ancestor.push(rect(n));
+            const imgsFinam=name==='finam' ? [...document.querySelectorAll('#hero-artboard img')].map(im=>({
+                image:rect(im),parent:rect(im.parentElement)
+            })):[];
+            const boards=name==='reference' ? [...document.querySelectorAll('.page-content-container,.content-bounds,.rmwidget.widget-image,.widget-image-v3,.widget-image')].slice(0,10).map(rect)
+                :['#hero-showcase','#hero-artboard','#hero-image-left','#hero-image-right','.background-pattern'].map(sel=>rect(document.querySelector(sel)));
+            const refWidget=name==='reference' ? ancestor.find(a=>a.className.includes('rmwidget')) : null;
+            return {url:location.href,viewport:innerWidth,screenHeight:innerHeight,docWidth:document.documentElement.scrollWidth,docHeight:document.documentElement.scrollHeight,
+                images:images.slice(0,12),focus:rect(focus),ancestor,boards,refWidget,imgsFinam};
+          }"""
+          output={}
+          with sync_playwright() as p:
+            browser=p.chromium.launch(headless=True,args=['--no-sandbox'])
+            for width in (320,375,390,430,768,1024,1440):
+              output[str(width)]={}
+              for name,url in [('reference','https://readymag.website/u875042579/5202538/'),('finam','http://127.0.0.1:4173/')]:
+                c=browser.new_context(viewport={'width':width,'height':844},device_scale_factor=1,is_mobile=width<768,has_touch=width<768)
+                page=c.new_page()
+                error=None
+                try:
+                  page.goto(url,wait_until='domcontentloaded',timeout=65000)
+                  page.wait_for_timeout(1500)
+                  page.evaluate('() => document.fonts.ready')
+                  data=page.evaluate(script,name)
+                  if width in (390,1440):
+                    if name=='reference':
+                      im=page.locator('img').filter(visible=True)
+                      # try scrolling the measured hero image, if available
+                      page.evaluate("""() => {
+                        const e=[...document.images].find(im=>{const r=im.getBoundingClientRect();return r.width>100&&r.height>60&&r.top>250&&r.top<1500;});
+                        if(e)e.scrollIntoView({block:'center'});
+                      }""")
+                    else:
+                      page.locator('#hero-showcase').scroll_into_view_if_needed()
+                    page.wait_for_timeout(550)
+                    page.screenshot(path=f'hero-audit/{name}-{width}.png',full_page=False,animations='disabled',timeout=18000)
+                except Exception as ex:
+                  error=str(ex)
+                  data={}
+                data['error']=error
+                output[str(width)][name]=data
+                print('HERO_AUDIT',width,name,json.dumps(data,ensure_ascii=False))
+                c.close()
+            browser.close()
+          Path('hero-audit/metrics.json').write_text(json.dumps(output,ensure_ascii=False,indent=2))
+          PY
+      - name: Archive comparison screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hero-artboard-comparison
+          path: hero-audit/
+          if-no-files-found: warn
