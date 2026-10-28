@@ -241,7 +241,7 @@ h1{text-transform:lowercase}
     letter-spacing:normal;font-synthesis:none;
   }
   /* Mobile heading weight; keep the large descriptive lead at 400. */
-  #case-title{font-weight:600}
+  #case-title{font-weight:700}
   /* The reference separates the intro headline from body copy by 24 design px. */
   .intro .lead{margin-bottom:7.5vw}
   .body-text,.feature-copy p,.results-intro p,.info-card p,.stat-card p{
@@ -251,7 +251,7 @@ h1{text-transform:lowercase}
   }
   .section-title,.info-card h3{
     font-family:'Unbounded',sans-serif;
-    font-size:5vw;font-weight:600;line-height:7.5vw;
+    font-size:5vw;font-weight:700;line-height:7.5vw;
     /* Readymag section labels include 13 design px of bottom padding inside the widget. */
     padding-bottom:4.0625vw;
     letter-spacing:normal;font-synthesis:none;
@@ -265,7 +265,7 @@ h1{text-transform:lowercase}
   .stat-card{padding:var(--pad)}
   .stat-card strong{
     font-family:'Unbounded',sans-serif;
-    font-size:7.8125vw;font-weight:600;line-height:11.25vw;letter-spacing:normal;
+    font-size:7.8125vw;font-weight:700;line-height:11.25vw;letter-spacing:normal;
     white-space:normal;font-synthesis:none;
   }
 
