@@ -103,6 +103,6 @@ Order follows original artboard layout: tall left frame, upper right frame, lowe
 | `#components-carousel-track` | `index.html` | `4337:12973` | Slider track |
 | `#components-slide-1` / `#components-image-1` | `index.html` | `4343:12974` | `components-slide-01.webp` |
 | `#components-slide-2` / `#components-image-2` | `index.html` | `4337:9058` | `components-slide-02.webp` |
-| `#components-slide-3` / `#components-image-3` | `index.html` | `2439:4262` | `components-slide-03.webp` |
+| `#components-slide-3` / `#components-image-3` | `index.html` | `4327:5812` | `components-slide-03.webp` |
 
 Controls: `components-carousel.js`. Styles: `styles.css`. Export automation: `components-carousel.json`, `scripts/sync-components-carousel.mjs`, `.github/workflows/sync-components-carousel.yml`.
