@@ -332,5 +332,5 @@ h1{text-transform:lowercase}
 @media(max-width:767px){
   /* 320px canvas: image x=8px, w=292px, h=156px. */
   #hero-showcase{height:48.75vw;}
-  #hero-artboard{width:91.25%;left:0;margin-inline:auto;}
+  #hero-artboard{width:91.25%;left:2.5%;margin-inline:0;}
 }
