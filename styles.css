@@ -312,22 +312,28 @@ h1{text-transform:lowercase}
   /* Reference image starts 66px from the left up to a 1440px viewport. */
   left:max(66px,calc(50% - 654px));
 }
+/* Image geometry from Figma frame 2304:1991 (1268 × 676).
+   Front: image 37, x=113 y=87, 536 × 1025.
+   Back:  image 36, x=618 y=219, 536 × 803.
+   Percentages preserve their exact relative placement inside the scaled
+   mobile hero artboard without changing either source image. */
 #hero-artboard .hero-tile{
   position:absolute;
-  height:auto;
   overflow:hidden;
 }
 #hero-artboard .hero-tile img{
-  display:block;
-  width:100%;max-width:100%;height:auto;
-  object-fit:contain;object-position:top center;
+  display:block;width:100%;max-width:100%;height:100%;
+  object-fit:cover;object-position:center;
 }
-/* Ratios taken from the reference's two overlapping screen areas. */
-#hero-image-left{
-  left:6.7%;top:14.35%;width:52.2%;height:auto;z-index:2;
+#hero-artboard > #hero-image-left{
+  left:8.9116719%;top:12.8698225%;
+  width:42.2712934%;height:151.6272189%;
+  z-index:2;
 }
-#hero-image-right{
-  left:48.4%;top:19.8%;width:44.4%;height:auto;z-index:1;
+#hero-artboard > #hero-image-right{
+  left:48.7381703%;top:32.3964497%;
+  width:42.2712934%;height:118.7869822%;
+  z-index:1;
 }
 @media(max-width:767px){
   /* 320px canvas: image x=8px, w=292px, h=156px. */
