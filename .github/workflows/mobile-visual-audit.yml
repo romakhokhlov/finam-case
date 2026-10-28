@@ -30,6 +30,48 @@ jobs:
         run: |
           python -m pip install playwright==1.56.0
           python -m playwright install chromium
+      - name: Inspect reference scaling DOM and computed text metrics
+        run: |
+          python - <<'PY'
+          import json
+          from playwright.sync_api import sync_playwright
+          script = """() => {
+            const pick = el => {
+              if (!el) return null;
+              const r=el.getBoundingClientRect(),s=getComputedStyle(el), p=el.parentElement;
+              return {tag:el.tagName,cls:(''+(el.className||'')).slice(0,90),id:el.id||'',txt:(el.innerText||'').trim().slice(0,66),
+                font:s.fontFamily,size:s.fontSize,weight:s.fontWeight,lineHeight:s.lineHeight,
+                letterSpacing:s.letterSpacing,color:s.color,zoom:s.zoom,
+                rectW:r.width,rectH:r.height,cssW:el.offsetWidth,cssH:el.offsetHeight,
+                rectOverCssH:el.offsetHeight?+(r.height/el.offsetHeight).toFixed(5):null,
+                transform:s.transform,scale:s.scale,transformOrigin:s.transformOrigin,
+                inlineStyle:(el.getAttribute('style')||'').slice(0,280),
+                layout:s.position,display:s.display,whiteSpace:s.whiteSpace};
+            };
+            const texts=[...document.querySelectorAll('h1,h2,h3,h4,p,strong')].filter(e=>e.getBoundingClientRect().width>100 && (e.innerText||'').trim().length>3).slice(0,100);
+            const target=texts.find(e=>(e.innerText||'').trim().startsWith('Service redesign')) || texts[0];
+            let n=target,ancestors=[];
+            for(let i=0;n&&i<20;i++,n=n.parentElement){const v=pick(n);if(v)ancestors.push(v);}
+            const trans=[...document.querySelectorAll('*')].filter(e=>{const v=getComputedStyle(e);return v.transform!=='none'||v.zoom!=='1'||v.scale!=='none';}).slice(0,45).map(pick);
+            return {url:location.href, width:innerWidth,devicePixelRatio,docWidth:document.documentElement.scrollWidth,
+              meta:[...document.querySelectorAll('meta[name=viewport]')].map(e=>e.content),
+              fonts:[...document.fonts].filter(f=>f.status==='loaded').map(f=>({family:f.family,weight:f.weight})),
+              target:pick(target),ancestors,transformedElements:trans,texts:texts.map(pick),
+              stylesheets:[...document.styleSheets].map(x=>x.href).filter(Boolean).slice(0,18)};
+          }"""
+          with sync_playwright() as p:
+              browser=p.chromium.launch(headless=True,args=['--no-sandbox'])
+              for width in (375,390,430):
+                  ctx=browser.new_context(viewport={'width':width,'height':844},device_scale_factor=1,is_mobile=True,has_touch=True)
+                  pg=ctx.new_page()
+                  pg.goto('https://readymag.website/u875042579/5202538/',wait_until='domcontentloaded',timeout=65000)
+                  pg.wait_for_timeout(1900)
+                  pg.evaluate('() => document.fonts.ready')
+                  result=pg.evaluate(script)
+                  print('REF_SCALE_JSON_'+str(width)+' '+json.dumps(result,ensure_ascii=False))
+                  ctx.close()
+              browser.close()
+          PY
       - name: Start local static site
         run: |
           python -m http.server 4173 --bind 127.0.0.1 > /tmp/finam-local-server.log 2>&1 &
