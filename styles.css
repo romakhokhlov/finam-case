@@ -271,4 +271,23 @@ h1{text-transform:lowercase}
   /* Align all six page screenshots to the same content grid as the copy. */
   .examples-stack{width:calc(100% - var(--pad) - var(--pad))}
   .page-previews{gap:3vw}
+
+  /* Reserve the true shape of every tall screenshot before lazy-loading. */
+  #examples-media .page-shot img{
+    display:block;width:100%;height:auto;max-width:100%;object-fit:contain;
+  }
+  #example-image-one{aspect-ratio:1284 / 4096}
+  #example-image-two{aspect-ratio:1456 / 4096}
+  #example-image-three{aspect-ratio:1422 / 4096}
+  #example-image-four{aspect-ratio:1163 / 4096}
+  #example-image-five{aspect-ratio:1440 / 3336}
+  #example-image-six{aspect-ratio:1338 / 4096}
+
+  /* Keep slide height stable even when an offscreen image loads lazily.
+     object-fit:contain preserves each source image's intrinsic proportions. */
+  #components-carousel .components-slide img{
+    display:block;width:100%;height:calc(100% - 216px);
+    max-width:100%;max-height:calc(100% - 216px);
+    object-fit:contain;object-position:center;
+  }
 }
