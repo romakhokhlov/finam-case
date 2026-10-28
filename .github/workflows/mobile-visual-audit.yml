@@ -126,6 +126,8 @@ jobs:
                               sel="#example-image-"+elem
                               page.locator(sel).scroll_into_view_if_needed(timeout=12000)
                               page.wait_for_function("sel => {const im=document.querySelector(sel);return im && im.complete && im.naturalWidth>0}",arg=sel,timeout=16000)
+                              sizes=page.locator(sel).evaluate("(im) => ({naturalW:im.naturalWidth,naturalH:im.naturalHeight,boxW:im.getBoundingClientRect().width,boxH:im.getBoundingClientRect().height,fit:getComputedStyle(im).objectFit})")
+                              print("LOADED_EXAMPLE",sel,json.dumps(sizes))
                           for root,next_button,dot in (
                               ("#key-visual-carousel",".key-visual-next",".key-visual-dot"),
                               ("#modular-carousel",".modular-next",".modular-dot"),
