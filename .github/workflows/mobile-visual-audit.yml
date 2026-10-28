@@ -76,6 +76,60 @@ jobs:
         run: |
           python -m http.server 4173 --bind 127.0.0.1 > /tmp/finam-local-server.log 2>&1 &
           sleep 2
+      - name: Compare individual glyph line boxes and widget padding
+        run: |
+          python - <<'PY'
+          import json
+          from playwright.sync_api import sync_playwright
+          js="""(name) => {
+            const targets = name==='reference'
+              ? ['Service redesign that increased user growth by 135%','Beeline is one of','hypotheses','After the MVP launch','benefits notifications','Clear, visual notifications','results','2 months after','user growth rate']
+              : ['finam','New visual language for Finam','Finam is one of','insights','Fragmented visual style','Inconsistent imagery','key visual','The central visual','results','Three months after','Page production time'];
+            const elems=[...document.querySelectorAll('h1,h2,h3,h4,p,strong')];
+            return targets.map(prefix=>{
+              const el=elems.find(e=>(e.textContent||'').trim().toLowerCase().startsWith(prefix.toLowerCase()));
+              if(!el)return {prefix,error:'not found'};
+              const c=getComputedStyle(el),r=el.getBoundingClientRect(),tn=[...el.childNodes].find(n=>n.nodeType===3&&n.textContent.trim());
+              let lineTops=[],firstLine='',lastLine='';
+              if(tn){
+                let groups={};
+                const t=tn.textContent,range=document.createRange();
+                for(let i=0;i<t.length;i++){
+                  if(!t[i].trim())continue;
+                  range.setStart(tn,i);range.setEnd(tn,i+1);
+                  const rect=range.getBoundingClientRect();if(!rect.width||!rect.height)continue;
+                  let key=Math.round(rect.y*2)/2;
+                  (groups[key]??=[]).push(t[i]);
+                }
+                lineTops=Object.keys(groups).map(Number).sort((a,b)=>a-b);
+                firstLine=(groups[lineTops[0]]||[]).join('');lastLine=(groups[lineTops.at(-1)]||[]).join('');
+              }
+              return {prefix,text:(el.innerText||'').slice(0,110),
+                font:c.fontFamily,fontSize:c.fontSize,fontWeight:c.fontWeight,
+                lineHeight:c.lineHeight,letterSpacing:c.letterSpacing,
+                paddingTop:c.paddingTop,paddingBottom:c.paddingBottom,
+                marginTop:c.marginTop,marginBottom:c.marginBottom,display:c.display,
+                transform:c.transform,rectH:r.height,offsetH:el.offsetHeight,
+                textContentRaw:(el.textContent||'').slice(-55),
+                lineCount:lineTops.length,firstLine,lastLine,
+                linePitch:lineTops.length>1?+(lineTops[1]-lineTops[0]).toFixed(3):null,
+                top:r.top, x:r.x,width:r.width};
+            });
+          }"""
+          with sync_playwright() as p:
+            b=p.chromium.launch(headless=True,args=['--no-sandbox'])
+            for width in (375,390,430):
+              for name,url in [('reference','https://readymag.website/u875042579/5202538/'),('finam','http://127.0.0.1:4173/')]:
+                c=b.new_context(viewport={'width':width,'height':844},is_mobile=True,has_touch=True)
+                page=c.new_page()
+                page.goto(url,wait_until='domcontentloaded',timeout=65000)
+                page.wait_for_timeout(1100)
+                page.evaluate('() => document.fonts.ready')
+                result=page.evaluate(js,name)
+                print('TEXT_LINE_METRICS_'+name+'_'+str(width)+' '+json.dumps(result,ensure_ascii=False))
+                c.close()
+            b.close()
+          PY
       - name: Compare reference and local site at 3 mobile sizes
         run: |
           python - <<'PY'
