@@ -164,8 +164,8 @@ h1{text-transform:lowercase}
 #key-visual-carousel .key-visual-control:focus-visible,
 #key-visual-carousel .key-visual-dot:focus-visible{outline:2px solid #fff;outline-offset:3px;}
 @media(max-width:767px){
-  /* Equal outer spacing between the carousel and the media panel edges. */
-  #key-visual-carousel{inset:34px 0;}
+  /* Keep the original bottom spacing; offset the mobile carousel 17px from the top. */
+  #key-visual-carousel{inset:17px 0 0;}
   #key-visual-carousel-viewport{width:90%;}
   #key-visual-carousel .key-visual-slide{padding:20px 0 108px;}
   #key-visual-carousel .key-visual-control{width:30px;height:30px;font-size:23px;}
