@@ -6,6 +6,8 @@ on:
     paths:
       - 'styles.css'
       - 'index.html'
+      - 'modular-carousel.js'
+      - 'components-carousel.js'
       - '.github/workflows/mobile-visual-audit.yml'
 
 permissions:
@@ -77,6 +79,81 @@ jobs:
         run: |
           python -m http.server 4173 --bind 127.0.0.1 > /tmp/finam-local-server.log 2>&1 &
           sleep 2
+      - name: Verify every carousel slide has 34px/25px/34px mobile spacing
+        run: |
+          python - <<'PY'
+          from playwright.sync_api import sync_playwright
+          specs=[
+            ('modular','#modular-media','#modular-carousel','.modular-dot','.modular-slide',5),
+            ('components','#components-media','#components-carousel','.components-dot','.components-slide',3),
+            ('key-visual','#key-visual-media','#key-visual-carousel','.key-visual-dot','.key-visual-slide',6)
+          ]
+          metrics_js="""(selectors) => {
+            const [panelSelector,rootSelector,slideSelector]=selectors;
+            const panel=document.querySelector(panelSelector);
+            const root=document.querySelector(rootSelector);
+            const img=root.querySelector(slideSelector+'[aria-hidden="false"] img');
+            const dots=root.querySelector('[class$="pagination"]');
+            const p=panel.getBoundingClientRect(), i=img.getBoundingClientRect(), d=dots.getBoundingClientRect();
+            return {top:i.top-p.top,gap:d.top-i.bottom,bottom:p.bottom-d.bottom,
+              panelHeight:p.height,imageHeight:i.height,photoWidth:i.width,
+              viewportWidth:root.querySelector('[id$="-viewport"]').getBoundingClientRect().width,
+              panelPaddingTop:getComputedStyle(panel).paddingTop,
+              panelPaddingBottom:getComputedStyle(panel).paddingBottom,
+              rootPosition:getComputedStyle(root).position,
+              naturalWidth:img.naturalWidth,naturalHeight:img.naturalHeight};
+          }"""
+          with sync_playwright() as p:
+            browser=p.chromium.launch(headless=True,args=['--no-sandbox'])
+            for width in (375,390,430,1024):
+              ctx=browser.new_context(viewport={'width':width,'height':844},device_scale_factor=1,is_mobile=width<768,has_touch=width<768)
+              page=ctx.new_page()
+              page.goto('http://127.0.0.1:4173/',wait_until='domcontentloaded',timeout=20000)
+              for label,panel,root,dot,slide,count in specs:
+                page.locator(root).scroll_into_view_if_needed(timeout=12000)
+                page.wait_for_selector(root+' '+dot,timeout=15000)
+                if width==1024:
+                  values=page.evaluate("""sels => {
+                    const [panel,root]=sels;
+                    const m=document.querySelector(panel),c=document.querySelector(root);
+                    return {height:m.getBoundingClientRect().height,
+                      padding:getComputedStyle(m).paddingTop,position:getComputedStyle(c).position};
+                  }""",[panel,root])
+                  assert abs(values['height']-563.2)<2 or abs(values['height']-676)<2,(label,width,values)
+                  assert values['padding']=='0px' and values['position']=='absolute',(label,width,values)
+                  print('DESKTOP_UNCHANGED',label,width,values)
+                  continue
+                # Test all slides, including images that were offscreen/lazy-loaded.
+                page.locator(root+' img').evaluate_all("(imgs) => imgs.forEach(img => img.loading='eager')")
+                page.wait_for_function("""selector => [...document.querySelectorAll(selector+' img')]
+                  .every(img => img.complete && img.naturalWidth>0)""",arg=root,timeout=40000)
+                for n in range(count):
+                  page.locator(root+' '+dot).nth(n).click(force=True)
+                  image_selector=root+' '+slide+'[aria-hidden="false"] img'
+                  page.wait_for_function("""selector => {
+                    const im=document.querySelector(selector);return im&&im.complete&&im.naturalHeight>0;
+                  }""",arg=image_selector,timeout=15000)
+                  page.wait_for_function("""sels => {
+                    const [panelSelector,rootSelector,slideSelector]=sels;
+                    const panel=document.querySelector(panelSelector);
+                    const root=document.querySelector(rootSelector);
+                    const img=root.querySelector(slideSelector+'[aria-hidden="false"] img');
+                    const dots=root.querySelector('[class$="pagination"]');
+                    if(!img||!dots)return false;
+                    const p=panel.getBoundingClientRect(),i=img.getBoundingClientRect(),d=dots.getBoundingClientRect();
+                    return Math.abs(i.top-p.top-34)<1.1
+                      &&Math.abs(d.top-i.bottom-25)<1.1
+                      &&Math.abs(p.bottom-d.bottom-34)<1.1;
+                  }""",arg=[panel,root,slide],timeout=10000)
+                  v=page.evaluate(metrics_js,[panel,root,slide])
+                  assert v['naturalHeight']>0 and v['imageHeight']>0,(label,width,n,v)
+                  assert v['panelPaddingTop']=='34px' and v['panelPaddingBottom']=='34px',(label,width,n,v)
+                  assert v['rootPosition']=='relative',(label,width,n,v)
+                  assert abs(v['panelHeight']-v['imageHeight']-101)<1.5,(label,width,n,v)
+                  print('CAROUSEL_SPACING_OK',label,width,n+1,v)
+              ctx.close()
+            browser.close()
+          PY
       - name: Verify mobile headings are genuine 700, desktop unchanged
         run: |
           python - <<'PY'
