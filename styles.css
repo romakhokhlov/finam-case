@@ -362,3 +362,48 @@ h1{text-transform:lowercase}
   #hero-showcase{height:48.75vw;}
   #hero-artboard{width:91.25%;left:2.5%;margin-inline:0;}
 }
+
+/* Mobile-only carousel panel sizing: match the approved Key Visual rhythm. */
+@media (max-width:767px){
+  /* Only the two remaining carousels; desktop rules and the reference carousel stay unchanged. */
+  #modular-media,#components-media{
+    height:auto;
+    min-height:0;
+    padding-block:34px;
+  }
+  #modular-media > .media-artboard,
+  #components-media > .media-artboard{height:auto;}
+  #modular-carousel,#components-carousel{
+    position:relative;
+    inset:auto;
+    flex-direction:column;
+  }
+  #modular-carousel-viewport,#components-carousel-viewport{height:auto;}
+  #modular-carousel-track,#components-carousel-track{
+    height:auto;
+    align-items:flex-start;
+  }
+  #modular-carousel .modular-slide,
+  #components-carousel .components-slide{
+    height:auto;
+    padding:0;
+    justify-content:center;
+  }
+  #modular-carousel .modular-slide img,
+  #components-carousel .components-slide img{
+    width:auto;
+    max-width:100%;
+    height:auto;
+    max-height:none;
+    object-fit:contain;
+  }
+  /* Pagination participates in flow: 34px panel padding + image + 25px + 8px dots + 34px. */
+  #modular-carousel .modular-pagination,
+  #components-carousel .components-pagination{
+    position:static;
+    bottom:auto;
+    left:auto;
+    transform:none;
+    margin-top:25px;
+  }
+}
