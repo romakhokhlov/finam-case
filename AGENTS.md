@@ -54,3 +54,11 @@ These rules apply to all changes in this repository. Read this file and inspect 
 - After validation, commit only your changes. Before pushing, run `git pull --rebase origin main`; resolve conflicts by preserving both agents' intent, otherwise stop and report the conflict.
 - Never use `git push --force`. If push is rejected because main advanced, sync and retry.
 - After pushing, confirm the new commit is included in remote `main`.
+
+## Image shadow standard
+
+- Apply this shared shadow to image surfaces that currently use the portfolio image shadow (including `.hero-tile` and `#examples-media .page-shot`).
+- Desktop (above 767px): `box-shadow: 0 0 30px rgba(0, 0, 0, 0.45)`.
+- Mobile (up to 767px): `box-shadow: 0 0 15px rgba(0, 0, 0, 0.45)`.
+- Vertical offset is always `0`; do not introduce a downward shadow offset.
+- Images whose shadow is explicitly reset to `box-shadow: none` remain unshadowed unless the task explicitly requests otherwise.
