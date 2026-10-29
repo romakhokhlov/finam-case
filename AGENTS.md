@@ -33,6 +33,12 @@ These rules apply to all changes in this repository. Read this file and inspect 
 - The reference card's inner structure is `<article class="info-card"><h3>…</h3><p>…</p></article>`. Maintain the existing heading/body spacing when applying the card pattern.
 - Reuse `.insight-grid` and `.info-card` where appropriate; if cards in a different section need special styling, scope it without altering the approved Insights set.
 
+## Text punctuation — no final periods
+
+- **Never end a paragraph with a period** anywhere on the Finam page, including introduction, section descriptions, informational cards, and results captions.
+- Keep punctuation **between sentences within the same paragraph**. Remove only a final `.` from the paragraph's rendered text; do not rewrite its content or remove sentence-internal periods.
+- When adding, translating, or editing text, check **every `<p>` in `index.html`** for trailing periods before publishing, even paragraphs outside the edited section.
+
 ## Verification before publishing
 
 1. Read current HTML and CSS and identify all selectors that apply to the component at each breakpoint.
