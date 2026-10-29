@@ -119,6 +119,15 @@ h1{text-transform:lowercase}
   border-radius:10px;
   box-shadow:none;
 }
+/* Make each screenshot row shrink to its visible images. Fixed row min-heights
+   created larger visual gaps when the gallery became narrower than 1268px.
+   The existing .examples-stack gap remains the same for all three rows. */
+#examples-media .page-previews{min-height:0}
+/* Preserve image dimensions before lazy-loaded WebP assets become available.
+   The intrinsic source ratio takes precedence after loading. */
+#example-image-one,#example-image-two{aspect-ratio:auto 888 / 2458}
+#example-image-three,#example-image-four{aspect-ratio:auto 888 / 2534}
+#example-image-five,#example-image-six{aspect-ratio:auto 888 / 1792}
 
 #modular-media,#modular-media *{border-radius:0;box-shadow:none}.modular-slide{display:flex;align-items:center;justify-content:center;width:100%;height:100%}.modular-slide img{display:block}
 
