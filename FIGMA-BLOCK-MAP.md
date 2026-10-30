@@ -64,10 +64,10 @@ Four exported PNG frames are ordered by their **left-to-right position** on the 
 
 | Slide | Figma frame | Asset | Export dimensions |
 |---|---|---|---|
-| 1 | `4315:62168` | `assets/modular-slide-01.png` | 1228 × 856 |
-| 2 | `4383:41189` | `assets/modular-slide-02.png` | 1228 × 1012 |
-| 3 | `4315:62292` | `assets/modular-slide-03.png` | 1228 × 648 |
-| 4 | `4315:62230` | `assets/modular-slide-04.png` | 1228 × 592 |
+| 1 | `4315:62168` | `assets/modular-slide-01.webp` | 1228 × 856 |
+| 2 | `4383:41189` | `assets/modular-slide-02.webp` | 1228 × 1012 |
+| 3 | `4315:62292` | `assets/modular-slide-03.webp` | 1228 × 648 |
+| 4 | `4315:62230` | `assets/modular-slide-04.webp` | 1228 × 592 |
 
 Target HTML: `#modular-carousel` in `index.html`. The shared controller in `components-carousel.js` generates the pagination based on slide count. Desktop CSS retains equal image widths and the approved layout; mobile remains auto-sized.
 
