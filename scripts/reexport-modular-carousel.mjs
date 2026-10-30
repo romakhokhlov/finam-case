@@ -34,10 +34,11 @@ for(let i=0;i<ids.length;i++){
  const output=await sharp(input).webp({quality:84,effort:6,alphaQuality:100}).toBuffer();
  await fs.writeFile('assets/'+name+'.webp',output);
  const oldPath='assets/'+name+'.png',newPath='assets/'+name+'.webp';
- if(!html.includes(oldPath)||!mapping.includes(oldPath))throw Error('Missing image reference '+oldPath);
+ if(!html.includes(oldPath)&&!html.includes(newPath))throw Error('Missing HTML image reference '+name);
+ if(!mapping.includes(oldPath)&&!mapping.includes(newPath))throw Error('Missing mapping for '+name);
  html=html.replaceAll(oldPath,newPath);
  mapping=mapping.replaceAll(oldPath,newPath);
- await fs.unlink(oldPath);
+ await fs.unlink(oldPath).catch(e=>{if(e.code!=='ENOENT')throw e;});
  console.log(name,ids[i],meta.width,meta.height,input.length,output.length);
 }
 await fs.writeFile('index.html',html);
