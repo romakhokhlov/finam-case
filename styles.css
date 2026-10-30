@@ -600,7 +600,7 @@ h1{text-transform:lowercase}
    Images remain visible if JavaScript or IntersectionObserver is unavailable. */
 @media (prefers-reduced-motion: no-preference) {
   .image-scroll-reveal {
-    animation: image-scroll-reveal 700ms ease-out both;
+    animation: image-scroll-reveal 1300ms ease-out both;
   }
 }
 @keyframes image-scroll-reveal {
