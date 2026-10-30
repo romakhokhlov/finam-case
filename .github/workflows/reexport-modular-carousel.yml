@@ -1,0 +1,78 @@
+name: Re-export Modular carousel from Figma
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/reexport-modular-carousel.mjs'
+      - '.github/workflows/reexport-modular-carousel.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: finam-modular-carousel-reexport
+  cancel-in-progress: false
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate configured Figma token
+        env:
+          FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
+        run: |
+          if [ -z "$FIGMA_TOKEN" ]; then
+            echo "::error::FIGMA_TOKEN repository secret is missing"
+            exit 1
+          fi
+
+      - name: Install Sharp
+        run: npm install --no-save --no-package-lock sharp@0.34.4
+
+      - name: Re-export four Figma slides to WebP
+        env:
+          FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
+        run: |
+          node --check scripts/reexport-modular-carousel.mjs
+          node scripts/reexport-modular-carousel.mjs
+
+      - name: Validate files and site
+        run: |
+          node scripts/verify-assets.mjs
+          node --check components-carousel.js
+          git diff --check
+
+      - name: Commit only Modular carousel image changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- index.html FIGMA-BLOCK-MAP.md \
+            assets/modular-slide-01.png assets/modular-slide-02.png \
+            assets/modular-slide-03.png assets/modular-slide-04.png \
+            assets/modular-slide-01.webp assets/modular-slide-02.webp \
+            assets/modular-slide-03.webp assets/modular-slide-04.webp
+          if git diff --cached --quiet; then
+            echo "No image changes"
+            exit 0
+          fi
+          git commit -m "Re-export Modular Figma slides in WebP"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            if git pull --rebase origin main && git push origin HEAD:main; then exit 0; fi
+            if [ "$attempt" -eq 5 ]; then
+              echo "::error::Unable to push Modular image changes"
+              exit 1
+            fi
+            sleep 5
+          done
