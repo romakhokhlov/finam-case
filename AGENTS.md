@@ -39,6 +39,18 @@ These rules apply to all changes in this repository. Read this file and inspect 
 - Keep punctuation **between sentences within the same paragraph**. Remove only a final `.` from the paragraph's rendered text; do not rewrite its content or remove sentence-internal periods.
 - When adding, translating, or editing text, check **every `<p>` in `index.html`** for trailing periods before publishing, even paragraphs outside the edited section.
 
+### CAROUSEL-COMPONENTS — reference carousel for comparable galleries
+
+- **Canonical implementation:** `#components-carousel` within `#components-media` in `index.html`, its selectors (including final media-query overrides) in `styles.css`, and behavior in `components-carousel.js`.
+- **Scope:** use as the structural and behavioral basis for new or explicitly requested changes to comparable image carousels. Do not alter the canonical carousel or retrofit existing galleries unless specifically asked. Preserve their images, content, intrinsic image proportions, per-section canvas dimensions, and other intentional differences.
+- **HTML:** focusable `role="region"` / `aria-roledescription="carousel"`, containing an overflow-hidden viewport, a flex track, full-viewport slide groups, previous/next buttons, and one accessible pagination button per slide. New instances must use unique IDs and properly matched selectors/JS; never reuse reference IDs.
+- **Slide mechanics:** track `display:flex`, `transition:transform .45s ease`, with `translate3d(-index * 100%,0,0)`. Slides `flex:0 0 100%`, `min-width:0`, centered vertically and horizontally, no extra slide gap or padding. Images use `object-fit:contain`, never crop; use source dimensions appropriate to the section.
+- **Desktop:** reference viewport width `59.15%` of artboard (specific to Components; do not force onto another section), fills artboard height. Images are centered and constrained to viewport size. Round controls `40×40px`, aligned to vertical center and inset `3.5%` left/right, arrow font `30px`. Pagination dots `8px` with `10px` gap, centered; its `bottom:75px` is section-specific.
+- **Mobile (<=767px):** reference viewport width `91%` (section-specific), controls `30×30px`, arrow font `23px`, inset `1%`. **Final** mobile CSS overrides set the media panel to `height:auto;min-height:0;padding-block:34px`, artboard and slides to content height, carousel to relative column layout, images to intrinsic aspect ratio with `object-fit:contain`, and pagination in normal flow `margin-top:25px` (rather than desktop absolute positioning). Observe final cascade instead of copying earlier mobile `height:clamp(...)` declarations.
+- **Navigation and accessibility:** previous/next arrows, dots, Left/Right keys, touch swipe with 40px threshold; wrap around; synchronize `is-current`, `aria-current`, and `aria-hidden`. Mobile viewport height follows the active image on load, resize, and slide change; support differing source aspect ratios. Preserve focus-visible outlines and disable track transition for `prefers-reduced-motion:reduce`.
+- **Reuse checklist:** inspect the original HTML, the full CSS cascade, and JS before building a similar carousel. Reuse controls, pagination rhythm, one-slide-at-a-time movement, navigation, and responsive behavior. Do not hardcode the reference's 3 images, widths, fixed panel measurements, or identifiers into other carousels.
+- **Verification:** compare desktop and mobile computed layout, image containment, controls, dots, swipes, keyboard movement, active-slide sizing, and reduced motion. Do not claim visual/runtime verification if unavailable.
+
 ## Verification before publishing
 
 1. Read current HTML and CSS and identify all selectors that apply to the component at each breakpoint.
