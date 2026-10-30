@@ -1,12 +1,12 @@
 (() => {
-  // Reveal actual image pixels, never the solid media panels or carousel slides.
+  // Reveal each image with its shadow; solid media panels and carousel slides stay unchanged.
   const standalone = [
-    ...document.querySelectorAll('#hero-artboard .hero-tile img'),
-    ...document.querySelectorAll('#examples-media .page-shot img')
+    ...document.querySelectorAll('#hero-artboard .hero-tile'),
+    ...document.querySelectorAll('#examples-media .page-shot')
   ];
-  const records = standalone.map(image => ({
-    watch: image,
-    image: () => image,
+  const records = standalone.map(surface => ({
+    watch: surface,
+    image: () => surface,
     prepared: null,
     done: false
   }));

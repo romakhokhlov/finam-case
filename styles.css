@@ -599,8 +599,15 @@ h1{text-transform:lowercase}
 /* Experimental scroll reveal: only image pixels animate, never grey media panels.
    These properties are independent of the hover transform and slide opacity crossfade. */
 @media (prefers-reduced-motion: no-preference) {
-  img.image-reveal-pending { opacity: 0; }
-  img.image-scroll-reveal { animation: image-scroll-reveal 1300ms ease-out both; }
+  img.image-reveal-pending,
+  #hero-artboard .hero-tile.image-reveal-pending,
+  #examples-media .page-shot.image-reveal-pending { opacity: 0; }
+
+  img.image-scroll-reveal,
+  #hero-artboard .hero-tile.image-scroll-reveal,
+  #examples-media .page-shot.image-scroll-reveal {
+    animation: image-scroll-reveal 1300ms ease-out both;
+  }
 }
 @keyframes image-scroll-reveal {
   from { opacity: 0; translate: 0 30px; scale: .95; }
