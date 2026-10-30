@@ -112,6 +112,7 @@
         slide.style.setProperty('--carousel-visual-top', `${balancedOuter - visualTop}px`);
         if (i === current) root.style.setProperty('--carousel-pagination-bottom', `${balancedOuter}px`);
       });
+      root.classList.add('has-balanced-spacing');
     };
 
     const syncLayout = () => {
