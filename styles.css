@@ -606,3 +606,29 @@ h1{text-transform:lowercase}
   from { opacity: 0; translate: 0 30px; scale: .95; }
   to { opacity: 1; translate: 0 0; scale: 1; }
 }
+
+
+/* Desktop gallery vertical rhythm: measure actual nontransparent image pixels
+   in the shared controller. Keep the panel dimensions, image widths, hover,
+   crossfade and all mobile rules unchanged. */
+@media (min-width:768px){
+  #components-carousel.has-balanced-spacing .components-slide,
+  #key-visual-carousel.has-balanced-spacing .key-visual-slide,
+  #modular-carousel.has-balanced-spacing .modular-slide{
+    justify-content:flex-start;
+    padding:var(--carousel-visual-top,34px) 0 0;
+  }
+  #components-carousel.has-balanced-spacing .components-pagination,
+  #key-visual-carousel.has-balanced-spacing .key-visual-pagination,
+  #modular-carousel.has-balanced-spacing .modular-pagination{
+    bottom:var(--carousel-pagination-bottom,75px);
+  }
+
+  /* Restore the original Key Visual image height cap when the slide's
+     vertical padding changes. Without this, widths can increase at
+     narrower desktop breakpoints. */
+  #key-visual-carousel-viewport{container-type:size;}
+  #key-visual-carousel .key-visual-slide img{
+    max-height:calc(100cqh - var(--carousel-slide-top) - var(--carousel-slide-bottom));
+  }
+}
