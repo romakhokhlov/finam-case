@@ -403,7 +403,12 @@ jobs:
                               page.locator(root).scroll_into_view_if_needed(timeout=12000)
                               page.locator(root+" "+next_button).click(timeout=12000)
                               dots=page.locator(root+" "+dot)
-                              assert dots.nth(1).get_attribute("class") is not None and "is-current" in dots.nth(1).get_attribute("class"), root+" second slide did not activate"
+                              # Crossfade controller decodes the next lazy image before activating it.
+                              page.wait_for_function("""arg => {
+                                const btn = document.querySelector(arg.root)?.querySelectorAll(arg.dot)[1];
+                                return btn?.classList.contains('is-current');
+                              }""",arg={"root":root,"dot":dot},timeout=20000)
+                              assert "is-current" in (dots.nth(1).get_attribute("class") or ""), root+" second slide did not activate"
                           print("PASSED_MOBILE_GALLERY_AND_CAROUSEL_INTERACTION_TESTS")
                       print("AUDIT",name,width,"body",data.get("body"),
                             "lead",data.get("css",{}).get(".lead"),
