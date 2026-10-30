@@ -51,6 +51,12 @@ These rules apply to all changes in this repository. Read this file and inspect 
 - **Reuse checklist:** inspect the original HTML, the full CSS cascade, and JS before building a similar carousel. Reuse controls, pagination rhythm, stacked-slide crossfade (same in both directions), navigation, and responsive behavior. All new analogous carousels must use this standard and preferably the shared controller, never a separate horizontal scroller. Do not hardcode the reference's 3 images, widths, fixed panel measurements, or identifiers into other carousels.
 - **Verification:** compare desktop and mobile computed layout, image containment, controls, dots, swipes, keyboard control, rapid repeated input, simultaneous opacity transitions, absence of horizontal motion, active-slide sizing, and reduced motion. Do not claim visual/runtime verification if unavailable.
 
+## Visual testing — Playwright and Chromium
+
+- For Finam browser verification, use **Playwright + Chromium**, not TinyFish. Run locally when the repository is available; the checked-in `.github/workflows/desktop-carousel-audit.yml` performs the same verification in GitHub Actions.
+- Compare desktop carousel spacing and composition at 768, 1024, 1280, 1440 and 1920px, and ensure the 390px mobile layout is unchanged. Use `getBoundingClientRect()`, computed styles and screenshots; distinguish image boxes from visually opaque image content.
+- Preserve the canonical Components carousel's shared crossfade controller and hover animation when adjusting desktop-only layout.
+
 ## Verification before publishing
 
 1. Read current HTML and CSS and identify all selectors that apply to the component at each breakpoint.
