@@ -1,0 +1,116 @@
+name: Desktop carousel spacing (Playwright / Chromium)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - styles.css
+      - .github/workflows/desktop-carousel-audit.yml
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify static build and carousel controller
+        run: |
+          node scripts/verify-assets.mjs
+          node --check components-carousel.js
+          git diff --check
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Playwright and Chromium
+        run: |
+          python -m pip install playwright==1.56.0
+          python -m playwright install chromium
+      - name: Start local static site
+        run: |
+          python -m http.server 4173 --bind 127.0.0.1 > /tmp/finam-desktop-audit-http.log 2>&1 &
+          sleep 2
+      - name: Measure desktop spacing and mobile invariants with Chromium
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+
+          galleries = [
+              ('key-visual', '.key-visual-slide'),
+              ('modular', '.modular-slide'),
+              ('components', '.components-slide'),
+          ]
+          out = Path('desktop-carousel-audit')
+          out.mkdir(exist_ok=True)
+          with sync_playwright() as playwright:
+              browser = playwright.chromium.launch(headless=True, args=['--no-sandbox'])
+              for width in (390, 768, 1024, 1280, 1440, 1920):
+                  context = browser.new_context(viewport={'width': width, 'height': 900}, device_scale_factor=1)
+                  page = context.new_page()
+                  page.goto('http://127.0.0.1:4173/', wait_until='domcontentloaded', timeout=30000)
+                  for name, slide_class in galleries:
+                      root = f'#{name}-carousel'
+                      panel = f'#{name}-media'
+                      page.wait_for_selector(f'{root} {slide_class} img', timeout=10000)
+                      page.locator(panel).scroll_into_view_if_needed()
+                      page.wait_for_function('''root => {
+                        const el = document.querySelector(root);
+                        return el && el.classList.contains('is-crossfade-ready');
+                      }''', arg=root, timeout=25000)
+                      data = page.evaluate('''arg => {
+                        const {root, panel, slideClass} = arg;
+                        const carousel = document.querySelector(root);
+                        const frame = document.querySelector(panel);
+                        const slide = carousel.querySelector(slideClass + '.is-current');
+                        const img = slide.querySelector('img');
+                        const dots = carousel.querySelector('[class$="pagination"]');
+                        const view = carousel.querySelector('[id$="-viewport"]');
+                        const s = getComputedStyle(slide), imageStyle=getComputedStyle(img),
+                              frameStyle=getComputedStyle(frame);
+                        const p=frame.getBoundingClientRect(), i=img.getBoundingClientRect(),
+                              d=dots.getBoundingClientRect(), v=view.getBoundingClientRect();
+                        return {
+                          top: i.top-p.top, bottom: p.bottom-i.bottom,
+                          dotsBottom:p.bottom-d.bottom, imgToDots:d.top-i.bottom,
+                          panelHeight:p.height, imageWidth:i.width, imageHeight:i.height,
+                          viewportWidth:v.width, paddingTop:s.paddingTop,
+                          paddingBottom:s.paddingBottom, flexDirection:s.flexDirection,
+                          justify:s.justifyContent, align:s.alignItems,
+                          fit:imageStyle.objectFit, radius:imageStyle.borderRadius,
+                          panelPaddingTop:frameStyle.paddingTop,
+                          panelPaddingBottom:frameStyle.paddingBottom,
+                          slideTransition:s.transitionProperty,
+                          imageLoaded:img.complete && img.naturalWidth>0
+                        };
+                      }''', {'root':root,'panel':panel,'slideClass':slide_class})
+                      assert data['imageLoaded'], (width, name, data)
+                      assert data['fit']=='contain', (width, name, data)
+                      if width >= 768:
+                          assert data['paddingTop']=='34px' and data['paddingBottom']=='108px', (width,name,data)
+                          assert data['justify']=='center' and data['align']=='center', (width,name,data)
+                          assert data['flexDirection']=='column', (width,name,data)
+                          assert abs(data['dotsBottom']-75)<1, (width,name,data)
+                          assert data['top']>=33 and data['bottom']>=107, (width,name,data)
+                          assert 'opacity' in data['slideTransition'], (width,name,data)
+                          if width==1440:
+                              expected={'key-visual':830,'modular':824,'components':1268*.5915}[name]
+                              assert abs(data['viewportWidth']-expected)<1, (width,name,data)
+                      else:
+                          assert data['panelPaddingTop']=='34px' and data['panelPaddingBottom']=='34px',(width,name,data)
+                          assert data['paddingTop']=='0px' and data['paddingBottom']=='0px',(width,name,data)
+                      print('CAROUSEL_GEOMETRY_OK', name, width, data, flush=True)
+                      if width in (390,1440):
+                          page.locator(panel).screenshot(path=str(out/f'{name}-{width}.png'))
+                  context.close()
+              browser.close()
+          PY
+      - name: Upload desktop and mobile comparison screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: finam-carousel-spacing
+          path: desktop-carousel-audit/
+          if-no-files-found: warn
