@@ -129,6 +129,9 @@ jobs:
                   .every(img => img.complete && img.naturalWidth>0)""",arg=root,timeout=40000)
                 for n in range(count):
                   page.locator(root+' '+dot).nth(n).click(force=True)
+                  # Active slide changes trigger the existing 400ms viewport-height transition.
+                  # Measure only after it settles; a transient midpoint can pass a loose tolerance.
+                  page.wait_for_timeout(460)
                   image_selector=root+' '+slide+'[aria-hidden="false"] img'
                   page.wait_for_function("""selector => {
                     const im=document.querySelector(selector);return im&&im.complete&&im.naturalHeight>0;
