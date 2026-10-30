@@ -1,38 +1,97 @@
 (() => {
-  // Animate artwork only, not the solid-background media sections or carousel controls.
-  const selector = [
-    '#hero-artboard .hero-tile',
-    '#key-visual-carousel-track',
-    '#modular-carousel-track',
-    '#components-carousel-track',
-    '#examples-media .page-shot'
-  ].join(', ');
-  const targets = [...document.querySelectorAll(selector)];
-  if (!targets.length || !('IntersectionObserver' in window)) return;
+  // Reveal actual image pixels, never the solid media panels or carousel slides.
+  const standalone = [
+    ...document.querySelectorAll('#hero-artboard .hero-tile img'),
+    ...document.querySelectorAll('#examples-media .page-shot img')
+  ];
+  const records = standalone.map(image => ({
+    watch: image,
+    image: () => image,
+    prepared: null,
+    done: false
+  }));
 
+  for (const [panelId, slideClass] of [
+    ['key-visual-media', 'key-visual-slide'],
+    ['modular-media', 'modular-slide'],
+    ['components-media', 'components-slide']
+  ]) {
+    const panel = document.getElementById(panelId);
+    if (!panel) continue;
+    records.push({
+      watch: panel,
+      image: () => panel.querySelector(`.${slideClass}.is-current img`) ||
+        panel.querySelector(`.${slideClass} img`),
+      prepared: null,
+      done: false
+    });
+  }
+
+  if (!records.length || !('IntersectionObserver' in window)) return;
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
   if (motion.matches) return;
 
-  // No pre-hidden state: images remain visible if scripting fails.
-  // Each artwork surface animates once, independent of carousel slide changes.
   let observer;
+  const clearPending = record => {
+    record.prepared?.classList.remove('image-reveal-pending');
+    record.prepared = null;
+  };
+  const reveal = record => {
+    if (record.done) return;
+    record.done = true;
+    const image = record.image();
+    clearPending(record);
+    if (!motion.matches && image) image.classList.add('image-scroll-reveal');
+    observer?.unobserve(record.watch);
+  };
+
   try {
+    const lookup = new Map(records.map(record => [record.watch, record]));
     observer = new IntersectionObserver(entries => {
       for (const entry of entries) {
         if (!entry.isIntersecting || entry.intersectionRatio < 0.18) continue;
-        entry.target.classList.add('image-scroll-reveal');
-        observer.unobserve(entry.target);
+        const record = lookup.get(entry.target);
+        if (record) reveal(record);
       }
-    }, { threshold: [0, 0.18] });
-    targets.forEach(target => observer.observe(target));
+    }, {threshold: [0, 0.18]});
+
+    // Apply the hidden starting state only after the observer exists.
+    // Inactive carousel slides never receive it, preserving crossfade navigation.
+    for (const record of records) {
+      const image = record.image();
+      if (image) {
+        record.prepared = image;
+        image.classList.add('image-reveal-pending');
+      }
+      observer.observe(record.watch);
+    }
   } catch (_) {
     observer?.disconnect();
+    records.forEach(clearPending); // Fail open if observer setup fails.
+    return;
   }
+
+  // Restore-to-scroll and bfcache can position images inside the viewport on load.
+  const revealVisible = () => {
+    if (motion.matches) return;
+    for (const record of records) {
+      if (record.done) continue;
+      const rect = record.watch.getBoundingClientRect();
+      if (!rect.height || !rect.width) continue;
+      const visibleHeight = Math.max(0, Math.min(rect.bottom, innerHeight) - Math.max(rect.top, 0));
+      if (visibleHeight / rect.height >= 0.18) reveal(record);
+    }
+  };
+  window.addEventListener('pageshow', () => requestAnimationFrame(revealVisible));
+  window.addEventListener('load', () => requestAnimationFrame(revealVisible), {once: true});
 
   const onPreferenceChange = () => {
     if (!motion.matches) return;
     observer?.disconnect();
-    targets.forEach(target => target.classList.remove('image-scroll-reveal'));
+    for (const record of records) {
+      clearPending(record);
+      record.image()?.classList.remove('image-scroll-reveal');
+    }
   };
   if (motion.addEventListener) motion.addEventListener('change', onPreferenceChange);
   else motion.addListener?.(onPreferenceChange);
