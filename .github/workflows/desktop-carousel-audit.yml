@@ -5,6 +5,12 @@ on:
   push:
     paths:
       - styles.css
+      - components-carousel.js
+      - .github/workflows/desktop-carousel-audit.yml
+  pull_request:
+    paths:
+      - styles.css
+      - components-carousel.js
       - .github/workflows/desktop-carousel-audit.yml
 
 permissions:
@@ -47,7 +53,7 @@ jobs:
           out.mkdir(exist_ok=True)
           with sync_playwright() as playwright:
               browser = playwright.chromium.launch(headless=True, args=['--no-sandbox'])
-              for width in (390, 768, 1024, 1280, 1440, 1920):
+              for width in (390, 768, 1024, 1280, 1440, 1920, 2560):
                   context = browser.new_context(viewport={'width': width, 'height': 900}, device_scale_factor=1)
                   page = context.new_page()
                   page.goto('http://127.0.0.1:4173/', wait_until='domcontentloaded', timeout=30000)
@@ -89,11 +95,11 @@ jobs:
                       assert data['imageLoaded'], (width, name, data)
                       assert data['fit']=='contain', (width, name, data)
                       if width >= 768:
-                          assert data['paddingTop']=='34px' and data['paddingBottom']=='108px', (width,name,data)
-                          assert data['justify']=='center' and data['align']=='center', (width,name,data)
+                          assert data['paddingBottom']=='0px', (width,name,data)
+                          assert data['justify']=='flex-start' and data['align']=='center', (width,name,data)
                           assert data['flexDirection']=='column', (width,name,data)
-                          assert abs(data['dotsBottom']-75)<1, (width,name,data)
-                          assert data['top']>=33 and data['bottom']>=107, (width,name,data)
+                          assert data['dotsBottom']>0, (width,name,data)
+                          assert data['top']>=0 and data['bottom']>=0, (width,name,data)
                           assert 'opacity' in data['slideTransition'], (width,name,data)
                           if width==1440:
                               expected={'key-visual':830,'modular':824,'components':1268*.5915}[name]
@@ -101,6 +107,67 @@ jobs:
                       else:
                           assert data['panelPaddingTop']=='34px' and data['panelPaddingBottom']=='34px',(width,name,data)
                           assert data['paddingTop']=='0px' and data['paddingBottom']=='0px',(width,name,data)
+                      if width >= 768:
+                          # All slides, including transparent artwork. Use the same
+                          # downsampled alpha threshold as components-carousel.js.
+                          carousel_images = root+' '+slide_class+' img'
+                          page.locator(carousel_images).evaluate_all(
+                              "(imgs) => imgs.forEach(img => img.loading='eager')"
+                          )
+                          page.wait_for_function('''selector => [...document.querySelectorAll(selector)]
+                              .every(img => img.complete && img.naturalWidth > 0)''',
+                              arg=carousel_images, timeout=25000)
+                          page.wait_for_timeout(1400)  # Let scroll-reveal settle
+                          for index in range(page.locator(root+' '+slide_class).count()):
+                              page.locator(root+' [class$="-pagination"] button').nth(index).click()
+                              page.wait_for_function('''arg => {
+                                  const slides=[...document.querySelectorAll(arg.root+' '+arg.slide)];
+                                  return slides[arg.index]?.classList.contains('is-current');
+                              }''', arg={'root':root,'slide':slide_class,'index':index}, timeout=15000)
+                              page.wait_for_timeout(1450)  # Avoid reveal or crossfade transforms
+                              margins=page.evaluate('''arg => {
+                                  const frame=document.querySelector(arg.panel);
+                                  const gallery=document.querySelector(arg.root);
+                                  const slide=gallery.querySelectorAll(arg.slide)[arg.index];
+                                  const image=slide.querySelector('img');
+                                  const dots=gallery.querySelector('[class$="-pagination"]');
+                                  const p=frame.getBoundingClientRect(), i=image.getBoundingClientRect(),
+                                        d=dots.getBoundingClientRect();
+                                  const w=image.offsetWidth,h=image.offsetHeight;
+                                  const scale=Math.min(w/image.naturalWidth,h/image.naturalHeight);
+                                  const renderedH=image.naturalHeight*scale;
+                                  const empty=(h-renderedH)/2;
+                                  const canvas=document.createElement('canvas');
+                                  const down=Math.min(1,512/Math.max(image.naturalWidth,image.naturalHeight));
+                                  canvas.width=Math.max(1,Math.round(image.naturalWidth*down));
+                                  canvas.height=Math.max(1,Math.round(image.naturalHeight*down));
+                                  const ctx=canvas.getContext('2d',{willReadFrequently:true});
+                                  ctx.drawImage(image,0,0,canvas.width,canvas.height);
+                                  const pixels=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+                                  let first=canvas.height,last=-1;
+                                  for(let y=0;y<canvas.height;y++){
+                                    const end=(y+1)*canvas.width*4;
+                                    for(let k=y*canvas.width*4+3;k<end;k+=4)
+                                      if(pixels[k]>=16){first=Math.min(first,y);last=Math.max(last,y);break}
+                                  }
+                                  const y0=last>=first?first/canvas.height:0;
+                                  const y1=last>=first?(last+1)/canvas.height:1;
+                                  const visibleTop=empty+y0*renderedH;
+                                  const visibleBottom=empty+y1*renderedH;
+                                  const oldTop=34+(p.height-34-108-h)/2;
+                                  const oldGap=p.height-75-d.height-(oldTop+visibleBottom);
+                                  return {
+                                    outerTop:i.top+visibleTop-p.top,
+                                    halfGap:d.top-i.top-visibleBottom,
+                                    outerBottom:p.bottom-d.bottom,
+                                    initialGap:oldGap,
+                                    width:w,height:h,panelHeight:p.height,
+                                    alphaTop:y0,alphaBottom:y1
+                                  };
+                              }''', {'root':root,'slide':slide_class,'panel':panel,'index':index})
+                              assert abs(margins['outerTop']-margins['outerBottom'])<1.5, (width,name,index,margins)
+                              assert abs(margins['halfGap']-margins['initialGap']/2)<1.5, (width,name,index,margins)
+                              print('CAROUSEL_SPACING_OK', width, name, index+1, margins, flush=True)
                       if name=='modular':
                           # Check all four Figma source images, including offscreen lazy-loaded slides.
                           page.locator(root+' '+slide_class+' img').evaluate_all(

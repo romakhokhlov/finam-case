@@ -42,6 +42,87 @@
       if (height > 0) viewport.style.height = `${Math.ceil(height)}px`;
     };
 
+
+    // Desktop-only geometry. Read the visible alpha bounds, not just the image
+    // element box: a transparent border is not visual spacing.
+    const alphaBounds = new WeakMap();
+    const visibleBounds = image => {
+      if (!image.complete || !image.naturalWidth || !image.naturalHeight) return {top: 0, bottom: 1};
+      const cached = alphaBounds.get(image);
+      if (cached && cached.w === image.naturalWidth && cached.h === image.naturalHeight) return cached;
+      let top = 0, bottom = 1, hasPixels = false;
+      try {
+        const scale = Math.min(1, 512 / Math.max(image.naturalWidth, image.naturalHeight));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+        canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+        const context = canvas.getContext('2d', {willReadFrequently: true});
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        const rgba = context.getImageData(0, 0, canvas.width, canvas.height).data;
+        let first = canvas.height, last = -1;
+        for (let y = 0; y < canvas.height; y++) {
+          const end = (y + 1) * canvas.width * 4;
+          for (let p = y * canvas.width * 4 + 3; p < end; p += 4) {
+            if (rgba[p] >= 16) { first = Math.min(first, y); last = Math.max(last, y); break; }
+          }
+        }
+        if (last >= first) {
+          top = first / canvas.height;
+          bottom = (last + 1) / canvas.height;
+          hasPixels = true;
+        }
+      } catch (_) { /* Opaque-element fallback if pixel access is unavailable. */ }
+      const result = {w: image.naturalWidth, h: image.naturalHeight, top, bottom};
+      // Never persist a fallback created before pixels were decoded:
+      // the next load/decode/resize pass must be able to retry the scan.
+      if (hasPixels) alphaBounds.set(image, result);
+      return result;
+    };
+
+    const syncDesktopSpacing = () => {
+      if (mobile.matches) return;
+      const panel = root.closest('.media-frame');
+      const pagination = root.querySelector('[class$="-pagination"], .components-pagination');
+      if (!panel || !pagination) return;
+      const panelHeight = panel.getBoundingClientRect().height;
+      const dotHeight = dots[0]?.getBoundingClientRect().height ?? 8;
+      if (!panelHeight || !dotHeight) return;
+      const styles = getComputedStyle(root);
+      const initialTop = parseFloat(styles.getPropertyValue('--carousel-slide-top')) || 34;
+      const initialBottom = parseFloat(styles.getPropertyValue('--carousel-slide-bottom')) || 108;
+      const initialPaginationBottom = 75;
+
+      slides.forEach((slide, i) => {
+        const image = slide.querySelector('img');
+        if (!image || !image.offsetWidth || !image.offsetHeight) return;
+        const width = image.offsetWidth, height = image.offsetHeight;
+        const naturalWidth = image.naturalWidth || Number(image.getAttribute('width')) || width;
+        const naturalHeight = image.naturalHeight || Number(image.getAttribute('height')) || height;
+        const fit = Math.min(width / naturalWidth, height / naturalHeight);
+        const renderedHeight = naturalHeight * fit;
+        const boxPadding = (height - renderedHeight) / 2;
+        const alpha = visibleBounds(image);
+        const visualTop = boxPadding + alpha.top * renderedHeight;
+        const visualBottom = boxPadding + alpha.bottom * renderedHeight;
+        const visibleHeight = visualBottom - visualTop;
+        // Reconstruct the original centered image location using original
+        // padding, so repeated recalculation never halves the gap twice.
+        const originalImageTop = initialTop + (panelHeight - initialTop - initialBottom - height) / 2;
+        const originalGap = panelHeight - initialPaginationBottom - dotHeight -
+          (originalImageTop + visualBottom);
+        const halvedGap = originalGap / 2;
+        const balancedOuter = (panelHeight - visibleHeight - dotHeight - halvedGap) / 2;
+        slide.style.setProperty('--carousel-visual-top', `${balancedOuter - visualTop}px`);
+        if (i === current) root.style.setProperty('--carousel-pagination-bottom', `${balancedOuter}px`);
+      });
+      root.classList.add('has-balanced-spacing');
+    };
+
+    const syncLayout = () => {
+      syncHeight();
+      syncDesktopSpacing();
+    };
+
     const updateState = () => {
       slides.forEach((slide, i) => {
         const active = i === current;
@@ -54,7 +135,7 @@
         if (active) dot.setAttribute('aria-current', 'true');
         else dot.removeAttribute('aria-current');
       });
-      syncHeight();
+      syncLayout();
     };
 
     const normalize = index => (index % slides.length + slides.length) % slides.length;
@@ -123,20 +204,20 @@
       if (Math.abs(dx) >= 40 && Math.abs(dx) > Math.abs(dy)) go(requested + (dx < 0 ? 1 : -1));
     }, {passive: true});
 
-    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(syncHeight);
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(syncLayout);
     for (const slide of slides) {
       const image = slide.querySelector('img');
       if (!image) continue;
-      image.addEventListener('load', syncHeight);
+      image.addEventListener('load', syncLayout);
       observer?.observe(image);
     }
-    window.addEventListener('resize', syncHeight);
-    mobile.addEventListener?.('change', syncHeight);
+    window.addEventListener('resize', syncLayout);
+    mobile.addEventListener?.('change', syncLayout);
     updateState();
     const activate = () => {
-      syncHeight();
+      syncLayout();
       root.classList.add('is-crossfade-ready');
-      syncHeight();
+      syncLayout();
     };
     const firstImage = slides[0].querySelector('img');
     if (firstImage) {
