@@ -51,8 +51,8 @@ h1{text-transform:lowercase}
 .examples-media-shell{padding-block:92px}
 .examples-artboard{position:relative}
 .examples-stack{display:flex;flex-direction:column;gap:48px;width:min(908px,calc(100% - 360px));margin-inline:auto;position:relative;z-index:1}
-/* Twice the previous 48px vertical gap; horizontal spacing within each row is unchanged. */
-#examples-media .examples-stack{row-gap:96px}
+/* Keep vertical row rhythm unchanged; increase only the gap between images in a row. */
+#examples-media .page-previews{column-gap:40px}
 .page-previews{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 .page-previews-tall{min-height:1229px}
 .page-previews-short{min-height:896px}
@@ -304,6 +304,7 @@ h1{text-transform:lowercase}
   /* Align all six page screenshots to the same content grid as the copy. */
   .examples-stack{width:calc(100% - var(--pad) - var(--pad))}
   .page-previews{gap:3vw}
+  #examples-media .page-previews{column-gap:6vw}
 
   /* Reserve the true shape of every tall screenshot before lazy-loading. */
   #examples-media .page-shot img{
