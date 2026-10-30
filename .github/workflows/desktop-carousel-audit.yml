@@ -5,6 +5,12 @@ on:
   push:
     paths:
       - styles.css
+      - components-carousel.js
+      - .github/workflows/desktop-carousel-audit.yml
+  pull_request:
+    paths:
+      - styles.css
+      - components-carousel.js
       - .github/workflows/desktop-carousel-audit.yml
 
 permissions:
