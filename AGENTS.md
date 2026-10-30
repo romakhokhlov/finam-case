@@ -58,7 +58,7 @@ These rules apply to all changes in this repository. Read this file and inspect 
 ## Image shadow standard
 
 - Apply this shared shadow to image surfaces that currently use the portfolio image shadow (including `.hero-tile` and `#examples-media .page-shot`).
-- Desktop (above 767px): `box-shadow: 0 0 30px rgba(0, 0, 0, 0.45)`.
-- Mobile (up to 767px): `box-shadow: 0 0 15px rgba(0, 0, 0, 0.45)`.
+- Desktop (above 767px): `box-shadow: 0 0 30px rgba(0, 0, 0, 0.25)`.
+- Mobile (up to 767px): `box-shadow: 0 0 15px rgba(0, 0, 0, 0.25)`.
 - Vertical offset is always `0`; do not introduce a downward shadow offset.
 - Images whose shadow is explicitly reset to `box-shadow: none` remain unshadowed unless the task explicitly requests otherwise.
