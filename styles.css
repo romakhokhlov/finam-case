@@ -595,3 +595,15 @@ h1{text-transform:lowercase}
     width:100%;height:auto;max-width:100%;max-height:none;
   }
 }
+
+/* Experimental image reveal; separate from hover scale and carousel crossfade.
+   Images remain visible if JavaScript or IntersectionObserver is unavailable. */
+@media (prefers-reduced-motion: no-preference) {
+  .image-scroll-reveal {
+    animation: image-scroll-reveal 700ms ease-out both;
+  }
+}
+@keyframes image-scroll-reveal {
+  from { opacity: 0; translate: 0 30px; }
+  to { opacity: 1; translate: 0 0; }
+}
