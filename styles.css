@@ -440,3 +440,28 @@ h1{text-transform:lowercase}
     transform: translate3d(0, 0, 0);
   }
 }
+
+/* Content-image hover zoom. Keep the media frames, carousel tracks and controls untouched. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  #hero-artboard .hero-tile img,
+  #key-visual-carousel .key-visual-slide img,
+  #modular-carousel .modular-slide img,
+  #components-carousel .components-slide img,
+  #examples-media .page-shot img {
+    transform-origin: center;
+    transition: transform 350ms ease-out;
+  }
+
+  #hero-artboard .hero-tile img:hover,
+  #key-visual-carousel .key-visual-slide img:hover,
+  #modular-carousel .modular-slide img:hover,
+  #components-carousel .components-slide img:hover,
+  #examples-media .page-shot img:hover {
+    transform: scale(1.03);
+  }
+
+  /* The screenshot's parent retains its border-radius and external box-shadow. */
+  #examples-media .page-shot {
+    overflow: hidden;
+  }
+}
