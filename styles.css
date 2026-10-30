@@ -442,31 +442,6 @@ h1{text-transform:lowercase}
   }
 }
 
-/* Content-image hover zoom. Keep the media frames, carousel tracks and controls untouched. */
-@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  #hero-artboard .hero-tile img,
-  #key-visual-carousel .key-visual-slide img,
-  #modular-carousel .modular-slide img,
-  #components-carousel .components-slide img,
-  #examples-media .page-shot img {
-    transform-origin: center;
-    transition: transform 350ms ease-out;
-  }
-
-  #hero-artboard .hero-tile img:hover,
-  #key-visual-carousel .key-visual-slide img:hover,
-  #modular-carousel .modular-slide img:hover,
-  #components-carousel .components-slide img:hover,
-  #examples-media .page-shot img:hover {
-    transform: scale(1.03);
-  }
-
-  /* The screenshot's parent retains its border-radius and external box-shadow. */
-  #examples-media .page-shot {
-    overflow: hidden;
-  }
-}
-
 /* Shared crossfade: section-specific sizes, alignment, shadows and hover remain intact. */
 #components-carousel-track,#key-visual-carousel-track,#modular-carousel-track{
   position:relative;display:block;height:100%;transform:none;transition:none;will-change:auto;
@@ -502,4 +477,53 @@ h1{text-transform:lowercase}
   #components-carousel .components-slide,#key-visual-carousel .key-visual-slide,
   #modular-carousel .modular-slide,#components-carousel-viewport,
   #key-visual-carousel-viewport,#modular-carousel-viewport{transition:none}
+}
+
+/* Zoom the complete artwork surfaces, never the img inside them.
+   Stacked crossfade slides can overflow their viewport safely: the shared
+   controller places every slide at the same coordinates (no horizontal track). */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  #hero-artboard .hero-tile,
+  #examples-media .page-shot {
+    transform-origin: center center;
+    transition: transform 350ms ease-out;
+  }
+
+  #hero-artboard .hero-tile:hover,
+  #examples-media .page-shot:hover {
+    transform: scale(1.03);
+  }
+
+  /* Each active carousel slide is the existing outer image surface.
+     Keep the 400ms opacity transition intact for crossfade. */
+  #key-visual-carousel .key-visual-slide,
+  #modular-carousel .modular-slide,
+  #components-carousel .components-slide {
+    transform-origin: center center;
+    transition: opacity 400ms ease-in-out, transform 350ms ease-out;
+  }
+
+  #key-visual-carousel .key-visual-slide.is-current:has(> img:hover),
+  #modular-carousel .modular-slide.is-current:has(> img:hover),
+  #components-carousel .components-slide.is-current:has(> img:hover) {
+    transform: scale(1.03);
+  }
+
+  /* The previous overflow:hidden clips the 3% expansion at the carousel
+     viewport edge. Crossfade does not require that horizontal mask. */
+  #key-visual-carousel-viewport,
+  #modular-carousel-viewport,
+  #components-carousel-viewport {
+    overflow: visible;
+  }
+
+  /* Allow page screenshots to grow over their siblings without moving
+     grid cells or clipping the shadow on the outer card. */
+  #examples-media .page-shot {
+    overflow: visible;
+    position: relative;
+  }
+  #examples-media .page-shot:hover {
+    z-index: 2;
+  }
 }
