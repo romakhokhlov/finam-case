@@ -1,10 +1,10 @@
 (() => {
-  // Animate outer media surfaces, not crossfade slides or hover-scaled images.
+  // Animate artwork only, not the solid-background media sections or carousel controls.
   const selector = [
-    '#hero-showcase',
-    '#key-visual-media',
-    '#modular-media',
-    '#components-media',
+    '#hero-artboard .hero-tile',
+    '#key-visual-carousel-track',
+    '#modular-carousel-track',
+    '#components-carousel-track',
     '#examples-media .page-shot'
   ].join(', ');
   const targets = [...document.querySelectorAll(selector)];
@@ -14,7 +14,7 @@
   if (motion.matches) return;
 
   // No pre-hidden state: images remain visible if scripting fails.
-  // Each surface animates once, independent of carousel slide changes.
+  // Each artwork surface animates once, independent of carousel slide changes.
   let observer;
   try {
     observer = new IntersectionObserver(entries => {
