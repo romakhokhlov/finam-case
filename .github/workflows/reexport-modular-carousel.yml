@@ -58,10 +58,14 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -- index.html FIGMA-BLOCK-MAP.md \
-            assets/modular-slide-01.png assets/modular-slide-02.png \
-            assets/modular-slide-03.png assets/modular-slide-04.png \
             assets/modular-slide-01.webp assets/modular-slide-02.webp \
             assets/modular-slide-03.webp assets/modular-slide-04.webp
+          # On initial export, stage PNG deletions; on later exports those paths no longer exist.
+          for n in 01 02 03 04; do
+            if git ls-files --error-unmatch "assets/modular-slide-${n}.png" >/dev/null 2>&1; then
+              git add -u -- "assets/modular-slide-${n}.png"
+            fi
+          done
           if git diff --cached --quiet; then
             echo "No image changes"
             exit 0
