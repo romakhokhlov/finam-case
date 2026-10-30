@@ -569,4 +569,15 @@ h1{text-transform:lowercase}
   }
   /* Match Key Visual's image height constraint inside the padded slide. */
   #components-carousel .components-slide img{max-height:100%;}
+
+  /* All five Modular images share a 1648px source width; the tallest is 1447px.
+     Size every image to the same width that fits this tallest aspect ratio
+     inside the padded slide. This preserves proportions without cropping. */
+  #modular-carousel-viewport{container-type:size;}
+  #modular-carousel .modular-slide img{
+    width:min(100%,calc((100cqh - var(--carousel-slide-top) - var(--carousel-slide-bottom)) * 1.138908));
+    height:auto;
+    max-width:100%;
+    max-height:100%;
+  }
 }
