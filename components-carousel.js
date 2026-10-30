@@ -47,10 +47,10 @@
     // element box: a transparent border is not visual spacing.
     const alphaBounds = new WeakMap();
     const visibleBounds = image => {
-      if (!image.naturalWidth || !image.naturalHeight) return {top: 0, bottom: 1};
+      if (!image.complete || !image.naturalWidth || !image.naturalHeight) return {top: 0, bottom: 1};
       const cached = alphaBounds.get(image);
       if (cached && cached.w === image.naturalWidth && cached.h === image.naturalHeight) return cached;
-      let top = 0, bottom = 1;
+      let top = 0, bottom = 1, hasPixels = false;
       try {
         const scale = Math.min(1, 512 / Math.max(image.naturalWidth, image.naturalHeight));
         const canvas = document.createElement('canvas');
@@ -69,10 +69,13 @@
         if (last >= first) {
           top = first / canvas.height;
           bottom = (last + 1) / canvas.height;
+          hasPixels = true;
         }
       } catch (_) { /* Opaque-element fallback if pixel access is unavailable. */ }
       const result = {w: image.naturalWidth, h: image.naturalHeight, top, bottom};
-      alphaBounds.set(image, result);
+      // Never persist a fallback created before pixels were decoded:
+      // the next load/decode/resize pass must be able to retry the scan.
+      if (hasPixels) alphaBounds.set(image, result);
       return result;
     };
 
