@@ -417,30 +417,26 @@ h1{text-transform:lowercase}
   #examples-media .page-shot{box-shadow:0 0 15px rgba(0,0,0,.25)}
 }
 
-/* Section-overlap enhancement: only opaque media surfaces move, not their carousel tracks. */
+/* Text-only, per-rendered-line roll reveal; no changes to media or page geometry. */
 @media (prefers-reduced-motion: no-preference) {
-  html.has-section-overlaps #hero-showcase,
-  html.has-section-overlaps #key-visual-media,
-  html.has-section-overlaps #modular-media,
-  html.has-section-overlaps #components-media,
-  html.has-section-overlaps #examples-media {
-    /* Override .full-bleed's horizontal centring without losing it. */
-    transform: translateX(-50%) translateY(var(--overlap-translate, 0px));
-    z-index: 10;
+  html.has-text-reveal .text-reveal-line {
+    display: block;
+    overflow: hidden;
   }
-  html.has-section-overlaps #case-intro,
-  html.has-section-overlaps #key-visual-copy,
-  html.has-section-overlaps #modular-copy,
-  html.has-section-overlaps #components > .feature-copy,
-  html.has-section-overlaps #page-examples > .feature-copy {
-    opacity: var(--overlap-copy-opacity, 1);
+  html.has-text-reveal .text-reveal-line-inner {
+    display: block;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translate3d(0, 105%, 0);
+    transition: transform 820ms cubic-bezier(.22, 1, .36, 1),
+                opacity 620ms cubic-bezier(.22, 1, .36, 1);
+    transition-delay: calc(var(--reveal-order, 0) * 90ms);
   }
-  html.has-section-overlaps #hero-showcase,
-  html.has-section-overlaps #key-visual,
-  html.has-section-overlaps #modular-block-system,
-  html.has-section-overlaps #components,
-  html.has-section-overlaps #page-examples {
-    /* Reclaim shifted-out space to avoid a blank band below an image panel. */
-    margin-bottom: calc(-1 * var(--overlap-reclaim, 0px));
+  html.has-text-reveal .text-reveal-ready:not(.text-reveal-visible) .text-reveal-line-inner {
+    transition: none;
+  }
+  html.has-text-reveal .text-reveal-visible .text-reveal-line-inner {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
   }
 }
