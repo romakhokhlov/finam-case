@@ -101,6 +101,29 @@ jobs:
                       else:
                           assert data['panelPaddingTop']=='34px' and data['panelPaddingBottom']=='34px',(width,name,data)
                           assert data['paddingTop']=='0px' and data['paddingBottom']=='0px',(width,name,data)
+                      if name=='modular':
+                          # Check all five source images, including offscreen lazy-loaded slides.
+                          page.locator(root+' '+slide_class+' img').evaluate_all(
+                              "(imgs) => imgs.forEach(img => img.loading='eager')"
+                          )
+                          page.wait_for_function('''selector => [...document.querySelectorAll(selector)]
+                            .every(img => img.complete && img.naturalWidth > 0)''',
+                            arg=root+' '+slide_class+' img', timeout=20000)
+                          sizes=page.locator(root+' '+slide_class+' img').evaluate_all('''imgs =>
+                            imgs.map(img => {
+                              const rect=img.getBoundingClientRect();
+                              return {w:rect.width,h:rect.height,x:rect.x,naturalW:img.naturalWidth};
+                            })''')
+                          assert len(sizes)==5 and all(v['naturalW']==1648 for v in sizes),(width,sizes)
+                          if width >= 768:
+                              assert max(v['w'] for v in sizes)-min(v['w'] for v in sizes)<0.5,(width,sizes)
+                              assert max(v['x'] for v in sizes)-min(v['x'] for v in sizes)<0.5,(width,sizes)
+                              assert all(v['h']<=data['panelHeight']-142+1 for v in sizes),(width,sizes)
+                          else:
+                              assert page.locator('#modular-carousel-viewport').evaluate(
+                                  'el => getComputedStyle(el).containerType'
+                              )=='normal',(width,sizes)
+                          print('MODULAR_UNIFORM_WIDTHS_OK',width,sizes,flush=True)
                       print('CAROUSEL_GEOMETRY_OK', name, width, data, flush=True)
                       if width in (390,1440):
                           page.locator(panel).screenshot(path=str(out/f'{name}-{width}.png'))
