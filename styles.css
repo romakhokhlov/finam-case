@@ -549,3 +549,24 @@ h1{text-transform:lowercase}
     grid-template-columns:minmax(0,min(516px,42%)) minmax(0,1fr);
   }
 }
+
+/* Desktop carousel geometry: match the approved Key Visual alignment and inner spacing. */
+@media (min-width:768px){
+  #key-visual-carousel,
+  #modular-carousel,
+  #components-carousel{
+    --carousel-slide-top:34px;
+    --carousel-slide-bottom:108px;
+  }
+  #key-visual-carousel .key-visual-slide,
+  #modular-carousel .modular-slide,
+  #components-carousel .components-slide{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:var(--carousel-slide-top) 0 var(--carousel-slide-bottom);
+  }
+  /* Match Key Visual's image height constraint inside the padded slide. */
+  #components-carousel .components-slide img{max-height:100%;}
+}
