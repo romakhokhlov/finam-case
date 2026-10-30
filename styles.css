@@ -416,3 +416,35 @@ h1{text-transform:lowercase}
   .hero-tile{box-shadow:0 0 15px rgba(0,0,0,.25)}
   #examples-media .page-shot{box-shadow:0 0 15px rgba(0,0,0,.25)}
 }
+
+/* Section overlap prototype: hero -> insights. Existing section sizing stays unchanged. */
+@media (prefers-reduced-motion: no-preference) {
+  html.has-hero-overlap #hero-showcase {
+    /* Keep the existing .full-bleed centering transform intact. */
+    transform: translateX(-50%) translateY(var(--section-overlap-shift, 0px));
+  }
+  html.has-hero-overlap #hero-showcase::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: #15131a;
+    opacity: var(--section-overlap-dim, 0);
+    pointer-events: none;
+    z-index: 5;
+  }
+  html.has-hero-overlap #insights {
+    position: relative;
+    z-index: 2;
+    isolation: isolate;
+  }
+  html.has-hero-overlap #insights::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 50%;
+    width: 100vw;
+    transform: translateX(-50%);
+    background: var(--background);
+    pointer-events: none;
+    z-index: -1;
+  }
+}
