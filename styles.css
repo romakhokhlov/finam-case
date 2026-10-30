@@ -466,3 +466,40 @@ h1{text-transform:lowercase}
     overflow: hidden;
   }
 }
+
+/* Shared crossfade: section-specific sizes, alignment, shadows and hover remain intact. */
+#components-carousel-track,#key-visual-carousel-track,#modular-carousel-track{
+  position:relative;display:block;height:100%;transform:none;transition:none;will-change:auto;
+}
+#components-carousel .components-slide,
+#key-visual-carousel .key-visual-slide,
+#modular-carousel .modular-slide{
+  position:absolute;inset:0;width:100%;min-width:0;height:100%;
+  opacity:0;pointer-events:none;transition:opacity 400ms ease-in-out;
+}
+#components-carousel .components-slide.is-current,
+#key-visual-carousel .key-visual-slide.is-current,
+#modular-carousel .modular-slide.is-current{
+  z-index:2;opacity:1;pointer-events:auto;
+}
+#components-carousel .components-slide.is-leaving,
+#key-visual-carousel .key-visual-slide.is-leaving,
+#modular-carousel .modular-slide.is-leaving{z-index:1}
+#components-carousel:not(.is-crossfade-ready) .components-slide:first-child,
+#key-visual-carousel:not(.is-crossfade-ready) .key-visual-slide:first-child,
+#modular-carousel:not(.is-crossfade-ready) .modular-slide:first-child{
+  position:relative;opacity:1;
+}
+@media(max-width:767px){
+  #components-carousel-viewport,#key-visual-carousel-viewport,#modular-carousel-viewport{
+    transition:height 400ms ease-in-out;
+  }
+  #components-carousel .components-slide img,
+  #key-visual-carousel .key-visual-slide img,
+  #modular-carousel .modular-slide img{flex-shrink:0}
+}
+@media(prefers-reduced-motion:reduce){
+  #components-carousel .components-slide,#key-visual-carousel .key-visual-slide,
+  #modular-carousel .modular-slide,#components-carousel-viewport,
+  #key-visual-carousel-viewport,#modular-carousel-viewport{transition:none}
+}
