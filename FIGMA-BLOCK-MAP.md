@@ -57,23 +57,19 @@ All HTML targets are in `index.html`. CSS: `styles.css`. Inspector: `debug-block
 
 To inspect the site, open `https://finam-case.pages.dev/?debug=blocks`. Click a labeled block to copy its ID. Without the query parameter the inspector does not run.
 
-## Modular carousel — new Figma source
+## Modular carousel — Figma Section 4
 
-Source file: `zG9GLaQaUXOhPeZC9VOBmx`; section `4308:3229`.
+Source file: `zG9GLaQaUXOhPeZC9VOBmx`; section: `4315:62167`.
+Four exported PNG frames are ordered by their **left-to-right position** on the Figma canvas, not by the Layers panel order. Frame `4383:41189` has overflowing content; its full render is 1228 × 1012.
 
-| Site ID | GitHub file | Figma node |
-|---|---|---|
-| `#modular-media` | `index.html` | `4308:3229` |
-| `#modular-carousel` | `index.html` | `4308:3229` |
-| `#modular-carousel-viewport` | `index.html` | `4308:3229` |
-| `#modular-carousel-track` | `index.html` | `4308:3229` |
-| `#modular-image-38` | `index.html` | `4308:3230` |
-| `#modular-image-39` | `index.html` | `4308:3231` |
-| `#modular-image-40` | `index.html` | `4308:3232` |
-| `#modular-image-41` | `index.html` | `4308:3233` |
-| `#modular-image-45` | `index.html` | `4308:3234` |
+| Slide | Figma frame | Asset | Export dimensions |
+|---|---|---|---|
+| 1 | `4315:62168` | `assets/modular-slide-01.png` | 1228 × 856 |
+| 2 | `4383:41189` | `assets/modular-slide-02.png` | 1228 × 1012 |
+| 3 | `4315:62292` | `assets/modular-slide-03.png` | 1228 × 648 |
+| 4 | `4315:62230` | `assets/modular-slide-04.png` | 1228 × 592 |
 
-Carousel behavior: `modular-carousel.js`. Carousel styling: `styles.css`.
+Target HTML: `#modular-carousel` in `index.html`. The shared controller in `components-carousel.js` generates the pagination based on slide count. Desktop CSS retains equal image widths and the approved layout; mobile remains auto-sized.
 
 ## Key Visual carousel (Figma Section 6)
 

@@ -84,7 +84,7 @@ jobs:
           python - <<'PY'
           from playwright.sync_api import sync_playwright
           specs=[
-            ('modular','#modular-media','#modular-carousel','.modular-dot','.modular-slide',5),
+            ('modular','#modular-media','#modular-carousel','.modular-dot','.modular-slide',4),
             ('components','#components-media','#components-carousel','.components-dot','.components-slide',3),
             ('key-visual','#key-visual-media','#key-visual-carousel','.key-visual-dot','.key-visual-slide',6)
           ]
