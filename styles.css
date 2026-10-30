@@ -527,3 +527,25 @@ h1{text-transform:lowercase}
     z-index: 2;
   }
 }
+
+
+/* Desktop-only: scale the Hero artboard as a unit when the effective
+   viewport is too narrow for the two screenshots. The final visible
+   right edge is at 91.01% of the artboard; reserve 66px on either side.
+   Preserve the 1268×676 reference proportions at wider viewports. */
+@media (min-width:768px){
+  #hero-showcase{
+    height:min(676px,calc((100vw - 132px) * .5857));
+  }
+  #hero-showcase #hero-artboard{
+    width:min(1268px,calc((100vw - 132px) * 1.0988));
+    height:100%;
+  }
+
+  /* Keep the intro reasonably wide without compressing the result cards
+     when browser zoom reduces the effective desktop viewport. */
+  #results{
+    margin-left:clamp(0px,calc((100vw - 1200px) * .45),106px);
+    grid-template-columns:minmax(0,min(516px,42%)) minmax(0,1fr);
+  }
+}
