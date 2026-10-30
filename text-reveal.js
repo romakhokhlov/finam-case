@@ -2,7 +2,6 @@
   // ONDO-style line reveal. All selectors refer to plain-text headings / paragraphs.
   // Never touch artwork, carousel slides, controls or layout sections.
   const selectors = [
-    '#case-intro h1', '#case-intro .lead', '#case-intro .body-text',
     '#insights > .section-title', '#insight-grid .info-card h3', '#insight-grid .info-card p',
     '#key-visual-copy h2', '#key-visual-copy p',
     '#modular-copy h2', '#modular-copy p',
